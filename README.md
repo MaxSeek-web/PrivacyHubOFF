@@ -30,7 +30,27 @@ PrivacyHub — Desktop application for creating, editing, versioning and exporti
 | `Ctrl + Alt + S` | Open Settings |
 | `Ctrl + D` | Open Downloads history |
 
-## Requirements
+## Web Version
+
+PrivacyHub is also available as a **fully client-side web application** — no installation required, all data is stored in your browser's localStorage.
+
+**Live:** [https://1000k.ru](https://1000k.ru)
+
+**Features (Web):**
+- Same rule CRUD, versioning, images, comments
+- Login/Register system (seeded admin: `testers@example.ru` / `testers`)
+- Three public feeds: **Community** (all rules), **Authors** (author-published), **My Rules**
+- Admin-only Community publishing
+- Dark/Light themes + EN/RU/KK languages
+- Keyboard shortcuts: `Ctrl+N` New, `Ctrl+S` Save, `Ctrl+F` Search, `Ctrl+A` Admin Panel, `Ctrl+D` Downloads, `Ctrl+Alt+S` Settings
+- Export to .txt and .md
+- Base64 shareable publish links
+
+**Files:**
+- `index.html` — GitHub Pages build
+- `PrivacyHub-Web.html` — Standalone local file
+
+## Requirements (Desktop)
 
 - Windows 10/11
 - Python 3.10+

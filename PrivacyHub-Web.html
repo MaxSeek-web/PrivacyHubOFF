@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrivacyHub Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0B0C10;
+  --surface: #161B22;
+  --surface-hover: #1F2833;
+  --surface-elevated: #21262D;
+  --text-primary: #E6EDF3;
+  --text-secondary: #8B949E;
+  --accent: #58A6FF;
+  --accent-hover: #79B8FF;
+  --border: #30363D;
+  --success: #3FB950;
+  --warning: #D29922;
+  --danger: #F85149;
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+.light-theme {
+  --bg: #FFFFFF;
+  --surface: #F6F8FA;
+  --surface-hover: #EFF1F3;
+  --surface-elevated: #FFFFFF;
+  --text-primary: #1F2328;
+  --text-secondary: #656D76;
+  --accent: #0969DA;
+  --accent-hover: #0550AE;
+  --border: #D0D7DE;
+  --success: #1A7F37;
+  --warning: #9A6700;
+  --danger: #CF222E;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+.app-wrapper { display: flex; flex-direction: column; height: 100vh; }
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-primary); }
+.logo-icon {
+  width: 28px; height: 28px; background: var(--accent); border-radius: 6px;
+  display: grid; place-items: center; font-size: 0.95rem;
+}
+.logo-text { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+
+.topbar-actions { display: flex; gap: 8px; margin-left: auto; align-items: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 6px; font-family: var(--font-body);
+  font-weight: 600; font-size: 0.85rem; cursor: pointer; border: 1px solid transparent;
+  background: var(--surface-elevated); color: var(--text-primary); transition: .15s;
+}
+.btn:hover { background: var(--surface-hover); }
+.btn-success { background: #1a5e2a; border-color: var(--success); color: #fff; }
+.light-theme .btn-success { background: #dafbe1; color: #1a5e2a; border-color: #3FB950; }
+.btn-success:hover { background: #216e34; }
+.btn-danger { background: #5c1b1b; border-color: var(--danger); color: #fff; }
+.light-theme .btn-danger { background: #ffebe9; color: #cf222e; border-color: #cf222e; }
+.btn-danger:hover { background: #752222; }
+.btn-primary { background: #0d4a8c; border-color: var(--accent); color: #fff; }
+.light-theme .btn-primary { background: #ddf4ff; color: #0969da; border-color: #58A6FF; }
+.btn-primary:hover { background: #1158a3; }
+.btn-warning { background: #5a3d00; border-color: var(--warning); color: #fff; }
+.light-theme .btn-warning { background: #fff8c5; color: #7d4e00; border-color: #D29922; }
+.btn-warning:hover { background: #6b4a00; }
+.btn-info { background: #0d4a8c; border-color: var(--accent); color: #fff; }
+.light-theme .btn-info { background: #ddf4ff; color: #0969da; border-color: #58A6FF; }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--surface-hover); color: var(--text-primary); }
+.btn-small { padding: 6px 10px; font-size: 0.78rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.lang-select, .theme-select {
+  padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text-primary); font-family: var(--font-body); font-size: 0.85rem; cursor: pointer;
+}
+
+/* Main area */
+.main-area { display: flex; flex: 1; overflow: hidden; }
+
+/* Sidebar */
+.sidebar {
+  width: 300px; min-width: 260px; max-width: 400px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+.sidebar-header { padding: 14px 16px 8px; }
+.sidebar-header h2 { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; margin-bottom: 8px; }
+.search-box {
+  width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text-primary); font-family: var(--font-body); font-size: 0.85rem;
+}
+.search-box:focus { outline: none; border-color: var(--accent); }
+
+.rule-list { flex: 1; overflow-y: auto; padding: 4px 8px; }
+.rule-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 0.88rem; transition: background .15s;
+}
+.rule-item:hover { background: var(--surface-hover); }
+.rule-item.active { background: var(--surface-elevated); outline: 1px solid var(--accent); }
+.rule-emoji { font-size: 1rem; flex-shrink: 0; }
+.rule-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rule-img-count { color: var(--accent); font-size: 0.75rem; margin-left: auto; flex-shrink: 0; }
+
+.sidebar-footer { padding: 10px 16px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 0.8rem; }
+
+/* Editor panel */
+.editor-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.editor-meta {
+  display: grid; grid-template-columns: 120px 1fr; gap: 8px 14px;
+  padding: 14px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.editor-meta label { font-weight: 600; font-size: 0.82rem; color: var(--text-secondary); }
+.editor-meta input, .editor-meta select {
+  padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text-primary); font-family: var(--font-body); font-size: 0.88rem;
+}
+.editor-meta input:focus, .editor-meta select:focus { outline: none; border-color: var(--accent); }
+
+/* Editor */
+.editor-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.editor-label {
+  padding: 10px 20px 4px; font-family: var(--font-display); font-weight: 600; font-size: 0.88rem; color: var(--text-secondary);
+}
+.text-editor {
+  flex: 1; width: 100%; resize: none;
+  padding: 14px 20px; border: none; background: var(--bg); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 0.92rem; line-height: 1.6;
+}
+.text-editor:focus { outline: none; }
+
+/* Images area */
+.images-section {
+  padding: 12px 20px; border-top: 1px solid var(--border); background: var(--surface);
+  max-height: 220px; overflow-y: auto;
+}
+.images-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.images-header h4 { font-family: var(--font-display); font-size: 0.85rem; }
+.images-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.img-thumb {
+  position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--border); cursor: pointer; background: var(--bg);
+}
+.img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.img-thumb .img-del {
+  position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--danger); color: #fff; border: none; font-size: 0.7rem; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+}
+.img-thumb:hover .img-del { display: flex; }
+.img-placeholder { color: var(--text-secondary); font-size: 0.8rem; }
+
+/* Templates bar */
+.templates-bar {
+  display: flex; align-items: center; gap: 8px; padding: 10px 20px;
+  border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap;
+}
+.templates-bar span { font-weight: 600; font-size: 0.82rem; color: var(--text-secondary); margin-right: 4px; }
+
+/* Status bar */
+.status-bar {
+  padding: 6px 16px; font-size: 0.78rem; color: var(--text-secondary);
+  border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+  display: none; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  width: 90%; max-width: 850px; max-height: 90vh; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.modal-box-small { max-width: 480px; }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { font-family: var(--font-display); font-size: 1.15rem; }
+.modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Settings modal fields */
+.settings-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.settings-row label { font-weight: 600; font-size: 0.9rem; min-width: 90px; color: var(--text-secondary); }
+.settings-row select { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); font-family: var(--font-body); font-size: 0.9rem; }
+.settings-row input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); font-family: var(--font-body); font-size: 0.9rem; }
+.settings-row input:focus { outline: none; border-color: var(--accent); }
+
+/* Auth tabs */
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.auth-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.auth-note { color: var(--text-secondary); font-size: 0.82rem; margin-top: 10px; }
+
+/* Preview */
+.preview-meta { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 4px; }
+.preview-content {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 18px; font-family: var(--font-mono); font-size: 0.92rem; line-height: 1.6;
+  white-space: pre-wrap; margin-bottom: 16px;
+}
+.preview-images { display: flex; gap: 10px; flex-wrap: wrap; }
+.preview-images img { max-width: 220px; max-height: 220px; border-radius: 8px; border: 1px solid var(--border); }
+
+/* Link display */
+.link-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; font-family: var(--font-mono); font-size: 0.82rem;
+  word-break: break-all; color: var(--accent); margin: 10px 0;
+}
+
+/* Public rules list */
+.public-list { display: flex; flex-direction: column; gap: 10px; }
+.public-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); cursor: pointer; transition: background .15s;
+}
+.public-item:hover { background: var(--surface-hover); border-color: var(--accent); }
+.public-item-emoji { font-size: 1.1rem; }
+.public-item-info { flex: 1; }
+.public-item-title { font-weight: 600; font-size: 0.95rem; }
+.public-item-meta { color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px; }
+
+/* Downloads table */
+.downloads-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.downloads-table th, .downloads-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.downloads-table th { color: var(--text-secondary); font-weight: 600; }
+.downloads-table tr { cursor: pointer; transition: background .1s; }
+.downloads-table tr:hover { background: var(--surface-hover); }
+.downloads-table .dl-fmt { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+.downloads-table .dl-date { color: var(--text-secondary); font-size: 0.82rem; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+</style>
+</head>
+<body>
+
+<div class="app-wrapper" id="app">
+  <header class="topbar">
+    <a href="#" class="logo" onclick="return false;">
+      <span class="logo-icon">🛡️</span>
+      <span class="logo-text">PrivacyHub Web</span>
+    </a>
+    <div class="topbar-actions">
+      <select class="lang-select" id="langSelect" onchange="onLangChange(this.value)">
+        <option value="en">English</option>
+        <option value="ru">Русский</option>
+        <option value="kk">Қазақша</option>
+      </select>
+      <button class="btn btn-ghost btn-small" id="authBtn" onclick="handleAuthClick()">🚪 Login</button>
+      <button class="btn btn-ghost btn-small" id="adminBtn" style="display:none;" onclick="openAdminPanel()">👑 Admin</button>
+      <button class="btn btn-ghost btn-small" onclick="openModal('settingsModal')">⚙️ <span data-i18n="settings">Settings</span></button>
+      <button class="btn btn-success" onclick="createNewRule()" data-i18n="newRule">➕ New Rule</button>
+      <button class="btn btn-danger" onclick="deleteCurrentRule()" data-i18n="delete">🗑️ Delete</button>
+      <button class="btn btn-primary" onclick="saveCurrentRule()" data-i18n="save">💾 Save</button>
+      <button class="btn btn-warning" onclick="showPreview()" data-i18n="preview">👁️ Preview</button>
+      <button class="btn" style="background:#3d1f5c;border-color:#a371f7;color:#fff;" onclick="showPublishModal()">📢 <span data-i18n="publish">Publish</span></button>
+      <button class="btn btn-info" onclick="showPublicBrowser()">🌍 <span data-i18n="browsePublic">Public</span></button>
+      <button class="btn btn-info" onclick="showDownloads()" data-i18n="downloads">📥 Downloads</button>
+    </div>
+  </header>
+
+  <div class="main-area">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2 data-i18n="sidebarTitle">📁 Rule Repositories</h2>
+        <input class="search-box" id="searchBox" placeholder="🔍 Search..." oninput="refreshList()" data-i18n-placeholder="searchPlaceholder">
+      </div>
+      <div class="rule-list" id="ruleList"></div>
+      <div class="sidebar-footer" id="sidebarStats">Rules: 0</div>
+    </aside>
+
+    <section class="editor-panel">
+      <div class="editor-meta">
+        <label data-i18n="labelTitle">Title:</label>
+        <input id="ruleTitle" placeholder="Rule title..." data-i18n-placeholder="placeholderTitle">
+        <label data-i18n="labelVersion">Version:</label>
+        <input id="ruleVersion" value="1.0" style="max-width:100px;">
+        <label data-i18n="labelStatus">Status:</label>
+        <select id="ruleStatus">
+          <option value="Draft" data-i18n-opt="statusDraft">Draft</option>
+          <option value="Under Review" data-i18n-opt="statusReview">Under Review</option>
+          <option value="Approved" data-i18n-opt="statusApproved">Approved</option>
+          <option value="Archived" data-i18n-opt="statusArchived">Archived</option>
+        </select>
+      </div>
+      <div class="editor-wrap">
+        <div class="editor-label" data-i18n="editorLabel">📝 Privacy Rule Content</div>
+        <textarea class="text-editor" id="ruleEditor" placeholder="Enter rule text..." data-i18n-placeholder="placeholderContent"></textarea>
+      </div>
+      <div class="images-section">
+        <div class="images-header">
+          <h4 data-i18n="imagesTitle">🖼️ Attached Images</h4>
+          <button class="btn btn-small btn-success" onclick="addImage()" data-i18n="addImage">➕ Add</button>
+          <input type="file" id="imgInput" accept="image/*" multiple style="display:none" onchange="handleImageSelect(event)">
+        </div>
+        <div class="images-list" id="imagesList"><span class="img-placeholder" data-i18n="noImages">No attached images</span></div>
+      </div>
+      <div class="comments-section" id="commentsSection" style="padding: 12px 20px; border-top: 1px solid var(--border); background: var(--surface); max-height: 180px; overflow-y: auto;">
+        <div class="comments-header" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <h4 style="font-family: var(--font-display); font-size: 0.85rem;">💬 Comments</h4>
+          <button class="btn btn-small btn-success" onclick="addComment()">➕ Add</button>
+        </div>
+        <div class="comments-list" id="commentsList"><span style="color:var(--text-secondary);font-size:0.8rem;">No comments</span></div>
+      </div>
+      <div class="templates-bar">
+        <span data-i18n="templatesLabel">⚡ Templates:</span>
+        <button class="btn btn-small" onclick="insertTemplate('general')" data-i18n="tplGeneral">General Provisions</button>
+        <button class="btn btn-small" onclick="insertTemplate('collect')" data-i18n="tplCollect">Data Collection</button>
+        <button class="btn btn-small" onclick="insertTemplate('storage')" data-i18n="tplStorage">Storage</button>
+        <button class="btn btn-small" onclick="insertTemplate('transfer')" data-i18n="tplTransfer">Transfer</button>
+        <button class="btn btn-small" onclick="insertTemplate('rights')" data-i18n="tplRights">User Rights</button>
+      </div>
+      <div class="status-bar" id="statusBar">Ready</div>
+    </section>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2 id="previewTitle">Preview</h2></div>
+    <div class="modal-body" id="previewBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-small" onclick="exportFromPreview('txt')">📤 <span data-i18n="exportTxt">Export .txt</span></button>
+      <button class="btn btn-small" onclick="exportFromPreview('md')">📤 <span data-i18n="exportMd">Export .md</span></button>
+      <button class="btn btn-small btn-danger" onclick="closeModal('previewModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Downloads Modal -->
+<div class="modal-overlay" id="downloadsModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2 data-i18n="downloadsTitle">📥 Export History</h2></div>
+    <div class="modal-body">
+      <table class="downloads-table" id="downloadsTable">
+        <thead><tr><th data-i18n="dlRule">Rule</th><th data-i18n="dlFormat">Format</th><th data-i18n="dlFilename">Filename</th><th data-i18n="dlDate">Date</th></tr></thead>
+        <tbody id="downloadsBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small btn-danger" onclick="clearDownloads()" data-i18n="clearHistory">🗑️ Clear History</button>
+      <button class="btn btn-small" onclick="closeModal('downloadsModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Publish Modal -->
+<div class="modal-overlay" id="publishModal">
+  <div class="modal-box modal-box-small">
+    <div class="modal-header"><h2 data-i18n="publishTitle">📢 Publish Rule</h2></div>
+    <div class="modal-body">
+      <div class="settings-row" style="margin-bottom:12px;">
+        <label style="min-width:60px;">Feed:</label>
+        <select id="publishTarget" style="flex:1;padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-primary);">
+          <option value="authors">Authors</option>
+          <option value="community">Community</option>
+        </select>
+      </div>
+      <p data-i18n="publishConfirm">Publish this rule and generate a public link?</p>
+      <div id="publishLinkBox" style="display:none;">
+        <p style="margin-top:10px;font-size:0.85rem;color:var(--text-secondary);" data-i18n="publishSuccess">Rule published! Share this link:</p>
+        <div class="link-box" id="publishLink"></div>
+        <button class="btn btn-small btn-primary" onclick="copyPublishLink()" data-i18n="copyLink">📋 Copy Link</button>
+        <span id="copyConfirm" style="color:var(--success);font-size:0.82rem;margin-left:8px;display:none;" data-i18n="linkCopied">Copied!</span>
+      </div>
+      <div id="publishWarn" style="display:none;color:var(--danger);font-size:0.85rem;margin-top:8px;">⛔ Only testers@example.ru can publish to Community.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small btn-success" id="btnDoPublish" onclick="doPublish()" data-i18n="publishBtn">📢 Publish</button>
+      <button class="btn btn-small" onclick="closeModal('publishModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Public Browser Modal -->
+<div class="modal-overlay" id="publicBrowserModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2 data-i18n="publicRulesTitle">🌍 Public Rules</h2></div>
+    <div class="modal-body">
+      <div class="auth-tabs" style="margin-bottom:12px;">
+        <button class="btn btn-small auth-tab active" id="tabCommunity" onclick="showPublicTab('community')">👥 Community</button>
+        <button class="btn btn-small auth-tab" id="tabAuthors" onclick="showPublicTab('authors')">✍️ Authors</button>
+        <button class="btn btn-small auth-tab" id="tabMyRules" onclick="showPublicTab('myrules')">📂 My Rules</button>
+      </div>
+      <div id="publicListBox">
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:14px;" id="publicDesc">All public rules shared by users. Click to view.</p>
+        <div class="public-list" id="publicList"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small" onclick="closeModal('publicBrowserModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Public View Modal -->
+<div class="modal-overlay" id="publicViewModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2 id="publicViewTitle">Public Rule</h2></div>
+    <div class="modal-body" id="publicViewBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-small btn-success" onclick="savePublicToMy()" data-i18n="saveToMy">💾 Save to My Rules</button>
+      <button class="btn btn-small" onclick="closeModal('publicViewModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Modal -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box modal-box-small">
+    <div class="modal-header"><h2>👑 Admin Panel</h2></div>
+    <div class="modal-body">
+      <p style="color:var(--text-secondary);font-size:0.9rem;">Admin controls for testers@example.ru</p>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Local Data</button>
+        <button class="btn btn-warning" onclick="showPublicBrowser();closeModal('adminModal');">🌍 Manage Public Rules</button>
+        <button class="btn btn-primary" onclick="location.reload()">🔄 Reload App</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small" onclick="closeModal('adminModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box modal-box-small">
+    <div class="modal-header"><h2 data-i18n="settingsTitle">⚙️ Settings</h2></div>
+    <div class="modal-body">
+      <div class="settings-row">
+        <label data-i18n="settingLang">Language:</label>
+        <select id="settingsLang" onchange="changeLanguage(this.value)">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="kk">Қазақша</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <label data-i18n="settingTheme">Theme:</label>
+        <select id="settingsTheme" onchange="changeTheme(this.value)">
+          <option value="dark" data-i18n="themeDark">Dark</option>
+          <option value="light" data-i18n="themeLight">Light</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small" onclick="closeModal('settingsModal')" data-i18n="close">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box modal-box-small">
+    <div class="modal-header"><h2 id="authModalTitle" data-i18n="login">🚪 Login</h2></div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <button class="btn btn-small auth-tab active" id="tabLoginBtn" onclick="showAuthTab('login')"><span data-i18n="login">🚪 Login</span></button>
+        <button class="btn btn-small auth-tab" id="tabRegisterBtn" onclick="showAuthTab('register')"><span data-i18n="register">Register</span></button>
+      </div>
+      <div id="loginPanel">
+        <div class="settings-row">
+          <label data-i18n="email">Email:</label>
+          <input type="email" id="loginEmail" placeholder="user@example.com">
+        </div>
+        <div class="settings-row">
+          <label data-i18n="password">Password:</label>
+          <input type="password" id="loginPassword">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-success" onclick="login()" data-i18n="login">🚪 Login</button>
+        </div>
+      </div>
+      <div id="registerPanel" style="display:none;">
+        <div class="settings-row">
+          <label data-i18n="email">Email:</label>
+          <input type="email" id="regEmail" placeholder="user@example.com">
+        </div>
+        <div class="settings-row">
+          <label data-i18n="password">Password:</label>
+          <input type="password" id="regPassword">
+        </div>
+        <div class="settings-row">
+          <label data-i18n="confirmPassword">Confirm Password:</label>
+          <input type="password" id="regConfirmPassword">
+        </div>
+        <button class="btn btn-success" onclick="register()" data-i18n="register">Register</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small" onclick="closeModal('authModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= i18n ================= */
+const i18n = {
+  en: {
+    settings: "Settings", newRule: "➕ New Rule", delete: "🗑️ Delete", save: "💾 Save",
+    preview: "👁️ Preview", downloads: "📥 Downloads", sidebarTitle: "📁 Rule Repositories",
+    searchPlaceholder: "🔍 Search...", labelTitle: "Title:", labelVersion: "Version:",
+    labelStatus: "Status:", placeholderTitle: "Rule title...", placeholderContent: "Enter rule text...",
+    editorLabel: "📝 Privacy Rule Content", imagesTitle: "🖼️ Attached Images", addImage: "➕ Add",
+    noImages: "No attached images", templatesLabel: "⚡ Templates:",
+    tplGeneral: "General Provisions", tplCollect: "Data Collection", tplStorage: "Storage",
+    tplTransfer: "Transfer", tplRights: "User Rights", statusBarReady: "Ready",
+    statusBarOpened: "Opened", statusBarSaved: "✅ Saved", statusBarDeleted: "🗑️ Deleted",
+    statusBarImagesAdded: "images added", statusBarExported: "Exported",
+    previewTitle: "Preview", exportTxt: "Export .txt", exportMd: "Export .md", close: "❌ Close",
+    downloadsTitle: "📥 Export History", dlRule: "Rule", dlFormat: "Format", dlFilename: "Filename", dlDate: "Date",
+    clearHistory: "🗑️ Clear History", settingsTitle: "⚙️ Settings", settingLang: "Language:", settingTheme: "Theme:",
+    themeDark: "Dark", themeLight: "Light", statusDraft: "Draft", statusReview: "Under Review",
+    statusApproved: "Approved", statusArchived: "Archived",
+    confirmDeleteRule: "Delete rule", confirmDeleteImage: "Delete image",
+    alertSelectRule: "Please select a rule first.", alertSelectRuleDelete: "Please select a rule to delete.",
+    alertSelectRuleExport: "Please select a rule to export.", alertSelectRulePreview: "Please select a rule for preview.",
+    promptRuleName: "Enter privacy rule name:", created: "Created", emptyHistory: "History is empty",
+    rulesCount: "Rules", translating: "Translating...",
+    publish: "Publish", browsePublic: "Public", publishTitle: "📢 Publish Rule",
+    publishConfirm: "Publish this rule and generate a public link?",
+    publishSuccess: "Rule published! Share this link:", copyLink: "📋 Copy Link", linkCopied: "Copied!",
+    publishBtn: "📢 Publish", saveToMy: "💾 Save to My Rules",
+    publicRulesTitle: "🌍 Public Rules", publicRulesDesc: "Rules shared by the community. Click to view.",
+    publicBy: "Published by", publicSaved: "✅ Saved to your rules",
+    login: "🚪 Login", logout: "🚪 Logout", register: "Register", email: "Email", password: "Password",
+    confirmPassword: "Confirm Password", loggedIn: "Logged in",
+    invalidCredentials: "Invalid email or password",
+    emailExists: "Email already registered", passwordMismatch: "Passwords do not match",
+    passwordShort: "Password must be at least 4 characters", invalidEmail: "Invalid email address",
+    tplGeneralText: `1.1. These Privacy Rules (hereinafter referred to as the "Rules") determine the procedure for processing and protecting users' personal data.\n\n1.2. By using the service, you agree to the terms of these Rules.`,
+    tplCollectText: `2.1. We collect only the data necessary to provide services.\n\n2.2. Categories of collected data include: name, email address, device technical data.`,
+    tplStorageText: `3.1. Data is stored on secure servers.\n\n3.2. Only authorized employees have access to the data.\n\n3.3. We apply encryption and other protection measures.`,
+    tplTransferText: `4.1. Personal data is not transferred to third parties without user consent.\n\n4.2. Exceptions are cases provided by law.`,
+    tplRightsText: `5.1. The user has the right to access their data.\n\n5.2. The user may demand correction, deletion, or restriction of data processing.`
+  },
+  ru: {
+    settings: "Настройки", newRule: "➕ Новое правило", delete: "🗑️ Удалить", save: "💾 Сохранить",
+    preview: "👁️ Предпросмотр", downloads: "📥 Загрузки", sidebarTitle: "📁 Репозитории правил",
+    searchPlaceholder: "🔍 Поиск...", labelTitle: "Название:", labelVersion: "Версия:",
+    labelStatus: "Статус:", placeholderTitle: "Название правила...", placeholderContent: "Введите текст правила...",
+    editorLabel: "📝 Содержание правила конфиденциальности", imagesTitle: "🖼️ Прикреплённые изображения", addImage: "➕ Добавить",
+    noImages: "Нет прикреплённых изображений", templatesLabel: "⚡ Шаблоны:",
+    tplGeneral: "Общие положения", tplCollect: "Сбор данных", tplStorage: "Хранение",
+    tplTransfer: "Передача", tplRights: "Права пользователя", statusBarReady: "Готово",
+    statusBarOpened: "Открыто", statusBarSaved: "✅ Сохранено", statusBarDeleted: "🗑️ Удалено",
+    statusBarImagesAdded: "изображений добавлено", statusBarExported: "Экспортировано",
+    previewTitle: "Предпросмотр", exportTxt: "Экспорт .txt", exportMd: "Экспорт .md", close: "❌ Закрыть",
+    downloadsTitle: "📥 История экспортов", dlRule: "Правило", dlFormat: "Формат", dlFilename: "Имя файла", dlDate: "Дата",
+    clearHistory: "🗑️ Очистить историю", settingsTitle: "⚙️ Настройки", settingLang: "Язык:", settingTheme: "Тема:",
+    themeDark: "Тёмная", themeLight: "Светлая", statusDraft: "Черновик", statusReview: "На рассмотрении",
+    statusApproved: "Утверждено", statusArchived: "Архив",
+    confirmDeleteRule: "Удалить правило", confirmDeleteImage: "Удалить изображение",
+    alertSelectRule: "Сначала выберите или создайте правило.", alertSelectRuleDelete: "Сначала выберите правило для удаления.",
+    alertSelectRuleExport: "Сначала выберите правило для экспорта.", alertSelectRulePreview: "Сначала выберите правило для предпросмотра.",
+    promptRuleName: "Введите название правила конфиденциальности:", created: "Создано", emptyHistory: "История пуста",
+    rulesCount: "Правил", translating: "Перевод...",
+    publish: "Опубликовать", browsePublic: "Публичные", publishTitle: "📢 Опубликовать правило",
+    publishConfirm: "Опубликовать это правило и сгенерировать публичную ссылку?",
+    publishSuccess: "Правило опубликовано! Поделитесь этой ссылкой:", copyLink: "📋 Копировать ссылку", linkCopied: "Скопировано!",
+    publishBtn: "📢 Опубликовать", saveToMy: "💾 Сохранить в мои правила",
+    publicRulesTitle: "🌍 Публичные правила", publicRulesDesc: "Правила, опубликованные сообществом. Нажмите, чтобы посмотреть.",
+    publicBy: "Опубликовано", publicSaved: "✅ Сохранено в ваши правила",
+    login: "🚪 Войти", logout: "🚪 Выйти", register: "Регистрация", email: "Email", password: "Пароль",
+    confirmPassword: "Подтвердите пароль", loggedIn: "Выполнен вход",
+    invalidCredentials: "Неверный email или пароль",
+    emailExists: "Email уже зарегистрирован", passwordMismatch: "Пароли не совпадают",
+    passwordShort: "Пароль должен быть не менее 4 символов", invalidEmail: "Неверный адрес электронной почты",
+    tplGeneralText: `1.1. Настоящие Правила конфиденциальности (далее — «Правила») определяют порядок обработки и защиты персональных данных пользователей.\n\n1.2. Используя сервис, вы выражаете согласие с условиями настоящих Правил.`,
+    tplCollectText: `2.1. Мы собираем только те данные, которые необходимы для предоставления услуг.\n\n2.2. К категориям собираемых данных относятся: имя, адрес электронной почты, технические данные устройства.`,
+    tplStorageText: `3.1. Данные хранятся на защищённых серверах.\n\n3.2. Доступ к данным имеют только уполномоченные сотрудники.\n\n3.3. Мы применяем шифрование и другие меры защиты.`,
+    tplTransferText: `4.1. Персональные данные не передаются третьим лицам без согласия пользователя.\n\n4.2. Исключение составляют случаи, предусмотренные законодательством.`,
+    tplRightsText: `5.1. Пользователь имеет право на доступ к своим данным.\n\n5.2. Пользователь может требовать исправления, удаления или ограничения обработки данных.`
+  },
+  kk: {
+    settings: "Параметрлер", newRule: "➕ Жаңа ереже", delete: "🗑️ Жою", save: "💾 Сақтау",
+    preview: "👁️ Алдын ала қарау", downloads: "📥 Жүктемелер", sidebarTitle: "📁 Ережелер репозиторийлері",
+    searchPlaceholder: "🔍 Іздеу...", labelTitle: "Атауы:", labelVersion: "Нұсқасы:",
+    labelStatus: "Күйі:", placeholderTitle: "Ереже атауы...", placeholderContent: "Ереже мәтінін енгізіңіз...",
+    editorLabel: "📝 Құпиялылық ережесінің мазмұны", imagesTitle: "🖼️ Тіркелген суреттер", addImage: "➕ Қосу",
+    noImages: "Тіркелген суреттер жоқ", templatesLabel: "⚡ Үлгілер:",
+    tplGeneral: "Жалпы ережелер", tplCollect: "Деректер жинау", tplStorage: "Сақтау",
+    tplTransfer: "Ақпарат беру", tplRights: "Пайдаланушы құқықтары", statusBarReady: "Дайын",
+    statusBarOpened: "Ашылды", statusBarSaved: "✅ Сақталды", statusBarDeleted: "🗑️ Жойылды",
+    statusBarImagesAdded: "сурет қосылды", statusBarExported: "Экспортталды",
+    previewTitle: "Алдын ала қарау", exportTxt: "Экспорт .txt", exportMd: "Экспорт .md", close: "❌ Жабу",
+    downloadsTitle: "📥 Экспорт тарихы", dlRule: "Ереже", dlFormat: "Формат", dlFilename: "Файл атауы", dlDate: "Күні",
+    clearHistory: "🗑️ Тарихты тазалау", settingsTitle: "⚙️ Параметрлер", settingLang: "Тіл:", settingTheme: "Тема:",
+    themeDark: "Қараңғы", themeLight: "Жарық", statusDraft: "Жоба", statusReview: "Қарау күйінде",
+    statusApproved: "Бекітілді", statusArchived: "Архив",
+    confirmDeleteRule: "Ережені жою", confirmDeleteImage: "Суретті жою",
+    alertSelectRule: "Алдымен ережені таңдаңыз немесе жасаңыз.", alertSelectRuleDelete: "Жою үшін алдымен ережені таңдаңыз.",
+    alertSelectRuleExport: "Экспорттау үшін алдымен ережені таңдаңыз.", alertSelectRulePreview: "Алдын ала қарау үшін алдымен ережені таңдаңыз.",
+    promptRuleName: "Құпиялылық ережесінің атауын енгізіңіз:", created: "Жасалды", emptyHistory: "Тарих бос",
+    rulesCount: "Ережелер", translating: "Аударуда...",
+    publish: "Жариялау", browsePublic: "Жария", publishTitle: "📢 Ережені жариялау",
+    publishConfirm: "Бұл ережені жариялап, көпшілік сілтемесін жасайсыз ба?",
+    publishSuccess: "Ереже жарияланды! Осы сілтемемен бөлісіңіз:", copyLink: "📋 Сілтемені көшіру", linkCopied: "Көшірілді!",
+    publishBtn: "📢 Жариялау", saveToMy: "💾 Менің ережелеріме сақтау",
+    publicRulesTitle: "🌍 Жария ережелер", publicRulesDesc: "Қоғамдық бөлісілген ережелер. Көру үшін басыңыз.",
+    publicBy: "Жариялаған", publicSaved: "✅ Сіздің ережелеріңізге сақталды",
+    login: "🚪 Кіру", logout: "🚪 Шығу", register: "Тіркелу", email: "Email", password: "Құпия сөз",
+    confirmPassword: "Құпия сөзді растаңыз", loggedIn: "Кіру орындалды",
+    invalidCredentials: "Қате email немесе құпия сөз",
+    emailExists: "Email бұрын тіркелген", passwordMismatch: "Құпия сөздер сәйкес келмейді",
+    passwordShort: "Құпия сөз кемінде 4 таңбадан тұруы керек", invalidEmail: "Қате электрондық пошта",
+    tplGeneralText: `1.1. Осы Құпиялылық ережелері (бұдан әрі — "Ережелер") пайдаланушылардың жеке деректерін өңдеу және қорғау тәртібін анықтайды.\n\n1.2. Қызметті пайдалана отырып, сіз осы Ережелердің шарттарымен келісесіз.`,
+    tplCollectText: `2.1. Біз тек қызметтерді көрсетуге қажетті деректерді жинаймыз.\n\n2.2. Жиналатын деректерге: аты, электрондық пошта мекенжайы, құрылғының техникалық деректері жатады.`,
+    tplStorageText: `3.1. Деректер қорғалған серверлерде сақталады.\n\n3.2. Деректерге тек уәкілетті қызметкерлер қол жеткізе алады.\n\n3.3. Біз шифрлау және басқа қорғау шараларын қолданамыз.`,
+    tplTransferText: `4.1. Жеке деректер пайдаланушының келісімінсіз үшінші тұлғаларға берілмейді.\n\n4.2. Заңда көзделген жағдайлар осыдан бөлек.`,
+    tplRightsText: `5.1. Пайдаланушы өз деректеріне қол жеткізу құқығына ие.\n\n5.2. Пайдаланушы деректерді түзетуді, жоюды немесе өңдеуді шектеуді талап ете алады.`
+  }
+};
+
+let lang = localStorage.getItem('ph_lang') || 'en';
+let theme = localStorage.getItem('ph_theme') || 'dark';
+let rules = {};
+let currentId = null;
+let currentImages = [];
+let viewingPublicRule = null;
+let isTranslating = false;
+let currentUser = null;
+let currentPublicTab = 'community';
+
+const DOWNLOADS_KEY = 'privacyhub_downloads';
+const PUBLIC_KEY = 'privacyhub_public';
+const PUBLIC_VER_KEY = 'ph_public_ver';
+const USERS_KEY = 'ph_users';
+const CURRENT_USER_KEY = 'ph_current_user';
+
+const STATUS_EMOJI = { 'Draft': '📝', 'Under Review': '👀', 'Approved': '✅', 'Archived': '📦',
+  'Черновик': '📝', 'На рассмотрении': '👀', 'Утверждено': '✅', 'Архив': '📦',
+  'Жоба': '📝', 'Қарау күйінде': '👀', 'Бекітілді': '✅', 'Архив': '📦' };
+
+function t(key) { return (i18n[lang] && i18n[lang][key]) || i18n['en'][key] || key; }
+
+function applyTheme() {
+  document.body.classList.toggle('light-theme', theme === 'light');
+  const st = document.getElementById('settingsTheme');
+  if (st) st.value = theme;
+}
+function changeTheme(val) {
+  theme = val;
+  localStorage.setItem('ph_theme', theme);
+  applyTheme();
+}
+
+/* ================= Auth ================= */
+function getUserId(email) { return btoa(email).replace(/=/g,''); }
+function getRulesKey() {
+  if (currentUser) return 'ph_rules_' + getUserId(currentUser);
+  return 'ph_rules';
+}
+function getUsers() {
+  const raw = localStorage.getItem(USERS_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+function initAuth() {
+  currentUser = localStorage.getItem(CURRENT_USER_KEY) || null;
+  // Seed default admin if no users exist
+  const users = getUsers();
+  if (!users.length) {
+    users.push({ email: 'testers@example.ru', passwordHash: 'dGVzdGVycw==', name: 'Admin' });
+    saveUsers(users);
+  }
+  updateAuthBtn();
+}
+function updateAuthBtn() {
+  const btn = document.getElementById('authBtn');
+  const adminBtn = document.getElementById('adminBtn');
+  if (!btn) return;
+  if (currentUser) {
+    btn.innerHTML = '👤 ' + escapeHtml(currentUser) + ' | ' + t('logout');
+    if (adminBtn) adminBtn.style.display = (currentUser.toLowerCase() === 'testers@example.ru') ? 'inline-flex' : 'none';
+  } else {
+    btn.innerHTML = t('login');
+    if (adminBtn) adminBtn.style.display = 'none';
+  }
+}
+function openAdminPanel() {
+  const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
+  if (!isAdmin) { alert('⛔ Admin panel is only for testers@example.ru'); return; }
+  openModal('adminModal');
+}
+function handleAuthClick() {
+  if (currentUser) logout();
+  else openAuthModal();
+}
+function openAuthModal() {
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('regEmail').value = '';
+  document.getElementById('regPassword').value = '';
+  document.getElementById('regConfirmPassword').value = '';
+  showAuthTab('login');
+  openModal('authModal');
+}
+function showAuthTab(tab) {
+  const loginPanel = document.getElementById('loginPanel');
+  const registerPanel = document.getElementById('registerPanel');
+  const loginBtn = document.getElementById('tabLoginBtn');
+  const regBtn = document.getElementById('tabRegisterBtn');
+  const title = document.getElementById('authModalTitle');
+  if (tab === 'login') {
+    loginPanel.style.display = 'block';
+    registerPanel.style.display = 'none';
+    loginBtn.classList.add('active');
+    regBtn.classList.remove('active');
+    if (title) title.textContent = t('login');
+  } else {
+    loginPanel.style.display = 'none';
+    registerPanel.style.display = 'block';
+    loginBtn.classList.remove('active');
+    regBtn.classList.add('active');
+    if (title) title.textContent = t('register');
+  }
+}
+function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const users = getUsers();
+  const hash = btoa(password);
+  const found = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === hash);
+  if (!found) {
+    alert(t('invalidCredentials'));
+    return;
+  }
+  currentUser = found.email;
+  localStorage.setItem(CURRENT_USER_KEY, currentUser);
+
+  // Migrate guest rules to user-specific if needed
+  const userKey = getRulesKey();
+  const userRules = localStorage.getItem(userKey);
+  const guestRules = localStorage.getItem('ph_rules');
+  if (!userRules && guestRules) {
+    localStorage.setItem(userKey, guestRules);
+  }
+
+  loadData();
+  refreshList();
+  if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
+  else { currentId = null; clearEditor(); }
+
+  updateAuthBtn();
+  closeModal('authModal');
+  document.getElementById('statusBar').textContent = t('loggedIn') + ': ' + currentUser;
+}
+function register() {
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regConfirmPassword').value;
+
+  if (!email.includes('@') || !email.split('@')[1].includes('.')) {
+    alert(t('invalidEmail'));
+    return;
+  }
+  if (password.length < 4) {
+    alert(t('passwordShort'));
+    return;
+  }
+  if (password !== confirm) {
+    alert(t('passwordMismatch'));
+    return;
+  }
+
+  const users = getUsers();
+  if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+    alert(t('emailExists'));
+    return;
+  }
+
+  users.push({ email, passwordHash: btoa(password), name: email.split('@')[0] });
+  saveUsers(users);
+  currentUser = email;
+  localStorage.setItem(CURRENT_USER_KEY, currentUser);
+
+  // Migrate guest rules to user-specific if needed
+  const userKey = getRulesKey();
+  const userRules = localStorage.getItem(userKey);
+  const guestRules = localStorage.getItem('ph_rules');
+  if (!userRules && guestRules) {
+    localStorage.setItem(userKey, guestRules);
+  }
+
+  loadData();
+  refreshList();
+  if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
+  else { currentId = null; clearEditor(); }
+
+  updateAuthBtn();
+  closeModal('authModal');
+  document.getElementById('statusBar').textContent = t('loggedIn') + ': ' + currentUser;
+}
+function logout() {
+  currentUser = null;
+  localStorage.removeItem(CURRENT_USER_KEY);
+  loadData();
+  refreshList();
+  if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
+  else { currentId = null; clearEditor(); }
+  updateAuthBtn();
+}
+function clearEditor() {
+  document.getElementById('ruleTitle').value = '';
+  document.getElementById('ruleVersion').value = '1.0';
+  document.getElementById('ruleStatus').value = 'Draft';
+  document.getElementById('ruleEditor').value = '';
+  currentImages = [];
+  renderImages();
+  renderComments();
+  updateStatusBar();
+}
+
+/* ================= Translation ================= */
+async function translateText(text, from, to) {
+  if (!text || from === to) return text;
+  try {
+    // Split long text by double newlines to avoid URL length issues
+    const chunks = text.split('\n\n');
+    const translatedChunks = [];
+    for (const chunk of chunks) {
+      if (!chunk.trim()) { translatedChunks.push(chunk); continue; }
+      const resp = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${from}|${to}`);
+      const data = await resp.json();
+      if (data.responseData && data.responseData.translatedText) {
+        translatedChunks.push(data.responseData.translatedText);
+      } else {
+        translatedChunks.push(chunk);
+      }
+    }
+    return translatedChunks.join('\n\n');
+  } catch (e) {
+    console.error('Translate error', e);
+    return text;
+  }
+}
+
+async function onLangChange(val) {
+  if (val === lang) return;
+  const oldLang = lang;
+  lang = val;
+  localStorage.setItem('ph_lang', lang);
+  const ls = document.getElementById('langSelect');
+  const sl = document.getElementById('settingsLang');
+  if (ls) ls.value = lang;
+  if (sl) sl.value = lang;
+
+  // Auto-translate current rule
+  if (currentId && rules[currentId] && !isTranslating) {
+    const fromCode = oldLang === 'kk' ? 'kk' : (oldLang === 'ru' ? 'ru' : 'en');
+    const toCode = lang === 'kk' ? 'kk' : (lang === 'ru' ? 'ru' : 'en');
+    if (fromCode !== toCode) {
+      isTranslating = true;
+      document.getElementById('statusBar').textContent = t('translating');
+      const r = rules[currentId];
+      const newTitle = await translateText(r.title, fromCode, toCode);
+      const newContent = await translateText(r.content, fromCode, toCode);
+      r.title = newTitle;
+      r.content = newContent;
+      r.updated = nowIso();
+      saveData();
+      selectRule(currentId);
+      isTranslating = false;
+    }
+  }
+  renderUI();
+}
+function changeLanguage(val) { onLangChange(val); closeModal('settingsModal'); }
+
+function renderUI() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key) el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (key) el.placeholder = t(key);
+  });
+  document.querySelectorAll('option[data-i18n-opt]').forEach(opt => {
+    const key = opt.getAttribute('data-i18n-opt');
+    if (key) opt.textContent = t(key);
+  });
+  refreshList();
+  updateStatusBar();
+  updateAuthBtn();
+}
+
+/* ================= Data ================= */
+function initData() {
+  // Migrate legacy privacyhub_rules to ph_rules if needed
+  const legacy = localStorage.getItem('privacyhub_rules');
+  const guest = localStorage.getItem('ph_rules');
+  if (legacy && !guest) {
+    localStorage.setItem('ph_rules', legacy);
+  }
+
+  // If logged in, migrate guest rules to user-specific if needed
+  if (currentUser) {
+    const userKey = getRulesKey();
+    const userRules = localStorage.getItem(userKey);
+    if (!userRules && guest) {
+      localStorage.setItem(userKey, guest);
+    }
+  }
+}
+function loadData() {
+  const key = getRulesKey();
+  const raw = localStorage.getItem(key);
+  rules = raw ? JSON.parse(raw) : {};
+}
+function saveData() { localStorage.setItem(getRulesKey(), JSON.stringify(rules)); }
+function getDownloads() { const raw = localStorage.getItem(DOWNLOADS_KEY); return raw ? JSON.parse(raw) : []; }
+function saveDownloads(dls) { localStorage.setItem(DOWNLOADS_KEY, JSON.stringify(dls)); }
+function addDownloadRecord(filename, fmt, ruleName) {
+  const dls = getDownloads();
+  dls.unshift({ ruleName, format: fmt, filename, timestamp: new Date().toISOString() });
+  saveDownloads(dls);
+}
+function genId() { return 'rule_' + Date.now(); }
+function nowIso() { return new Date().toISOString(); }
+
+/* ================= Public Rules ================= */
+function initPublicRules() {
+  const ver = localStorage.getItem(PUBLIC_VER_KEY);
+  if (ver !== 'ph2') {
+    const arr = getPrivacyHubRules();
+    savePublicRules(arr);
+    localStorage.setItem(PUBLIC_VER_KEY, 'ph2');
+  }
+}
+function getPrivacyHubRules() {
+  return [
+    { id: 'ph_privacy_en', title: 'PrivacyHub Privacy Policy', version: '1.0', status: 'Approved', content: '1. Introduction\nPrivacyHub respects your privacy. This policy explains how we handle your data.\n\n2. Data Collection\nWe only store data locally in your browser. No server uploads occur.\n\n3. Your Rights\nYou can export, delete, or modify your rules at any time.', lang: 'en', author: 'PrivacyHub', date: '2026-08-29' },
+    { id: 'ph_terms_ru', title: 'PrivacyHub Условия использования', version: '1.0', status: 'Approved', content: '1. Введение\nPrivacyHub уважает вашу конфиденциальность. Настоящие условия регулируют использование сервиса.\n\n2. Локальное хранение\nВсе данные хранятся локально в вашем браузере. Мы не загружаем информацию на сервер.\n\n3. Ваши права\nВы можете экспортировать, удалять и изменять свои правила в любое время.', lang: 'ru', author: 'PrivacyHub', date: '2026-08-29' },
+    { id: 'ph_cookies_kk', title: 'PrivacyHub Cookie саясаты', version: '1.0', status: 'Approved', content: '1. Кіріспе\nPrivacyHub сіздің құпиялылығыңызды құрметтейді. Бұл саясат деректерді қалай өңдейтінімізді түсіндіреді.\n\n2. Деректерді сақтау\nБарлық деректер сіздің браузеріңізде локалды түрде сақталады. Біз ақпаратты серверге жүктемейміз.\n\n3. Сіздің құқықтарыңыз\nСіз өз ережелеріңізді кез келген уақытта экспорттауға, жоюға немесе өзгертуге болады.', lang: 'kk', author: 'PrivacyHub', date: '2026-08-29' }
+  ];
+}
+function getPublicRules() {
+  const raw = localStorage.getItem(PUBLIC_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+function savePublicRules(arr) { localStorage.setItem(PUBLIC_KEY, JSON.stringify(arr)); }
+function addPublicRule(ruleObj) {
+  const arr = getPublicRules();
+  // Non-destructive: always append new pub versions
+  arr.unshift(ruleObj);
+  savePublicRules(arr);
+}
+
+/* ================= Publish ================= */
+function showPublishModal() {
+  if (!currentId || !rules[currentId]) { alert(t('alertSelectRule')); return; }
+  document.getElementById('publishLinkBox').style.display = 'none';
+  document.getElementById('btnDoPublish').style.display = 'inline-flex';
+  document.getElementById('publishWarn').style.display = 'none';
+  openModal('publishModal');
+}
+function doPublish() {
+  if (!currentId || !rules[currentId]) return;
+  const target = document.getElementById('publishTarget').value;
+  const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
+  if (target === 'community' && !isAdmin) {
+    document.getElementById('publishWarn').style.display = 'block';
+    return;
+  }
+  document.getElementById('publishWarn').style.display = 'none';
+  const r = rules[currentId];
+  const shareObj = {
+    id: currentId,
+    pub_id: 'pub_' + Date.now(),
+    title: r.title,
+    version: r.version,
+    status: r.status,
+    content: r.content,
+    lang: lang,
+    author: currentUser || 'Anonymous',
+    target: target,
+    date: nowIso().slice(0,10)
+  };
+  const json = JSON.stringify(shareObj);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const url = location.href.split('#')[0] + '#p=' + b64;
+  document.getElementById('publishLink').textContent = url;
+  document.getElementById('publishLinkBox').style.display = 'block';
+  document.getElementById('btnDoPublish').style.display = 'none';
+  addPublicRule(shareObj);
+}
+function copyPublishLink() {
+  const text = document.getElementById('publishLink').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const confirm = document.getElementById('copyConfirm');
+    confirm.style.display = 'inline';
+    setTimeout(() => confirm.style.display = 'none', 2000);
+  });
+}
+function handleSharedLink() {
+  const hash = location.hash;
+  if (!hash || !hash.startsWith('#p=')) return;
+  try {
+    const b64 = hash.slice(3);
+    const json = decodeURIComponent(escape(atob(b64)));
+    const rule = JSON.parse(json);
+    viewingPublicRule = rule;
+    addPublicRule(rule);
+    showPublicViewModal(rule);
+    history.replaceState(null, '', location.pathname + location.search);
+  } catch (e) {
+    console.error('Invalid shared link', e);
+  }
+}
+function showPublicViewModal(rule) {
+  document.getElementById('publicViewTitle').textContent = rule.title || 'Public Rule';
+  let html = '';
+  html += `<div class="preview-meta"><strong>${t('labelVersion')}</strong> ${rule.version || '1.0'} | <strong>${t('labelStatus')}</strong> ${rule.status || 'Draft'} | <strong>${t('publicBy')}</strong> ${rule.author || 'Unknown'} | ${rule.date || ''}</div>`;
+  html += `<div class="preview-content">${escapeHtml(rule.content || '')}</div>`;
+  document.getElementById('publicViewBody').innerHTML = html;
+  openModal('publicViewModal');
+}
+function savePublicToMy() {
+  if (!viewingPublicRule) return;
+  const id = genId();
+  rules[id] = {
+    title: viewingPublicRule.title || 'Imported Rule',
+    version: viewingPublicRule.version || '1.0',
+    status: viewingPublicRule.status || 'Draft',
+    content: viewingPublicRule.content || '',
+    images: [],
+    created: nowIso(),
+    updated: nowIso()
+  };
+  saveData();
+  currentId = id;
+  selectRule(id);
+  closeModal('publicViewModal');
+  document.getElementById('statusBar').textContent = t('publicSaved');
+}
+
+/* ================= Public Browser ================= */
+function showPublicBrowser() {
+  showPublicTab('community');
+  openModal('publicBrowserModal');
+}
+function showPublicTab(target) {
+  currentPublicTab = target;
+  const tabComm = document.getElementById('tabCommunity');
+  const tabAuth = document.getElementById('tabAuthors');
+  const tabMy = document.getElementById('tabMyRules');
+  const desc = document.getElementById('publicDesc');
+  if (tabComm) tabComm.classList.toggle('active', target === 'community');
+  if (tabAuth) tabAuth.classList.toggle('active', target === 'authors');
+  if (tabMy) tabMy.classList.toggle('active', target === 'myrules');
+  if (desc) {
+    if (target === 'community') desc.textContent = 'All public rules shared by users. Click to view.';
+    else if (target === 'authors') desc.textContent = 'Rules published by authors. Click to view.';
+    else desc.textContent = 'Your published rules. Click to view.';
+  }
+  renderPublicList(target);
+}
+function renderPublicList(target) {
+  const list = document.getElementById('publicList');
+  list.innerHTML = '';
+  let arr = getPublicRules();
+  const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
+  if (target === 'community') {
+    // Community shows ALL public rules
+    arr = arr;
+  } else if (target === 'authors') {
+    // Authors shows only authors target rules
+    arr = arr.filter(r => (r.target || 'authors') === 'authors');
+  } else if (target === 'myrules') {
+    // My Rules shows current user's rules
+    arr = arr.filter(r => currentUser && (r.author || '').toLowerCase() === currentUser.toLowerCase());
+  }
+  if (!arr.length) {
+    list.innerHTML = `<div style="color:var(--text-secondary);text-align:center;padding:24px;">No rules here yet.</div>`;
+    return;
+  }
+  arr.forEach((rule, idx) => {
+    const el = document.createElement('div');
+    el.className = 'public-item';
+    const emoji = STATUS_EMOJI[rule.status] || '📝';
+    const targetBadge = rule.target === 'community'
+      ? '<span style="background:var(--warning);color:#000;padding:2px 6px;border-radius:4px;font-size:0.7rem;margin-left:6px;">Community</span>'
+      : '<span style="background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.7rem;margin-left:6px;">Authors</span>';
+    const delBtn = isAdmin ? `<button class="btn btn-small btn-danger" style="margin-left:auto;" onclick="event.stopPropagation();deletePublicRule('${rule.pub_id || rule.id || idx}', '${target}')">🗑️</button>` : '';
+    el.innerHTML = `
+      <span class="public-item-emoji">${emoji}</span>
+      <div class="public-item-info">
+        <div class="public-item-title">${escapeHtml(rule.title || 'Untitled')}${targetBadge}</div>
+        <div class="public-item-meta">${escapeHtml(rule.author || '')} • ${rule.date || ''} • ${rule.lang || 'en'}</div>
+      </div>${delBtn}`;
+    el.onclick = () => { viewingPublicRule = rule; showPublicViewModal(rule); };
+    list.appendChild(el);
+  });
+}
+function deletePublicRule(idOrPubId, target) {
+  if (!confirm('Delete this public rule?')) return;
+  const arr = getPublicRules();
+  const idx = arr.findIndex(r => (r.pub_id || r.id) === idOrPubId);
+  if (idx >= 0) {
+    arr.splice(idx, 1);
+    savePublicRules(arr);
+  }
+  renderPublicList(target);
+}
+
+/* ================= Sidebar ================= */
+function refreshList() {
+  const list = document.getElementById('ruleList');
+  const query = document.getElementById('searchBox').value.toLowerCase();
+  list.innerHTML = '';
+  let count = 0;
+  Object.keys(rules).forEach(id => {
+    const r = rules[id];
+    if (!r || typeof r !== 'object') return;
+    const title = r.title || 'Untitled';
+    if (query && !title.toLowerCase().includes(query) && !(r.content || '').toLowerCase().includes(query)) return;
+    const status = r.status || 'Draft';
+    const emoji = STATUS_EMOJI[status] || '📝';
+    const imgCount = (r.images || []).length;
+    const el = document.createElement('div');
+    el.className = 'rule-item' + (id === currentId ? ' active' : '');
+    el.innerHTML = `<span class="rule-emoji">${emoji}</span><span class="rule-title">${escapeHtml(title)}</span>${imgCount ? `<span class="rule-img-count">🖼️${imgCount}</span>` : ''}`;
+    el.onclick = () => selectRule(id);
+    list.appendChild(el);
+    count++;
+  });
+  document.getElementById('sidebarStats').textContent = t('rulesCount') + ': ' + count;
+}
+
+function selectRule(id) {
+  if (!rules[id]) return;
+  currentId = id;
+  const r = rules[id];
+  document.getElementById('ruleTitle').value = r.title || '';
+  document.getElementById('ruleVersion').value = r.version || '1.0';
+  document.getElementById('ruleStatus').value = r.status || 'Draft';
+  document.getElementById('ruleEditor').value = r.content || '';
+  currentImages = r.images ? [...r.images] : [];
+  renderImages();
+  renderComments();
+  updateStatusBar();
+  refreshList();
+}
+function updateStatusBar() {
+  if (!currentId || !rules[currentId]) { document.getElementById('statusBar').textContent = t('statusBarReady'); return; }
+  const r = rules[currentId];
+  const upd = (r.updated || '').slice(0,19).replace('T',' ');
+  document.getElementById('statusBar').textContent = `${t('statusBarOpened')}: ${r.title || '...'} | ${t('dlDate')}: ${upd}`;
+}
+
+/* ================= CRUD ================= */
+function createNewRule() {
+  const title = prompt(t('promptRuleName'));
+  if (!title) return;
+  const id = genId();
+  rules[id] = { title, version: '1.0', status: 'Draft', content: '', images: [], created: nowIso(), updated: nowIso() };
+  saveData(); currentId = id;
+  document.getElementById('ruleTitle').value = title;
+  document.getElementById('ruleVersion').value = '1.0';
+  document.getElementById('ruleStatus').value = 'Draft';
+  document.getElementById('ruleEditor').value = '';
+  currentImages = []; renderImages();
+  refreshList();
+  document.getElementById('statusBar').textContent = t('created') + ': ' + title;
+}
+function deleteCurrentRule() {
+  if (!currentId || !rules[currentId]) { alert(t('alertSelectRuleDelete')); return; }
+  const title = rules[currentId].title || '';
+  if (!confirm(`${t('confirmDeleteRule')} "${title}"?`)) return;
+  delete rules[currentId]; saveData(); currentId = null;
+  document.getElementById('ruleTitle').value = '';
+  document.getElementById('ruleVersion').value = '1.0';
+  document.getElementById('ruleStatus').value = 'Draft';
+  document.getElementById('ruleEditor').value = '';
+  currentImages = []; renderImages();
+  refreshList();
+  document.getElementById('statusBar').textContent = t('statusBarDeleted');
+}
+function saveCurrentRule() {
+  if (!currentId || !rules[currentId]) { alert(t('alertSelectRule')); return; }
+  rules[currentId].title = document.getElementById('ruleTitle').value;
+  rules[currentId].version = document.getElementById('ruleVersion').value;
+  rules[currentId].status = document.getElementById('ruleStatus').value;
+  rules[currentId].content = document.getElementById('ruleEditor').value;
+  rules[currentId].images = [...currentImages];
+  rules[currentId].updated = nowIso(); saveData();
+  refreshList(); document.getElementById('statusBar').textContent = t('statusBarSaved');
+}
+
+/* ================= Templates ================= */
+function insertTemplate(key) {
+  const editor = document.getElementById('ruleEditor');
+  let txt = '';
+  if (key === 'general') txt = t('tplGeneralText');
+  if (key === 'collect') txt = t('tplCollectText');
+  if (key === 'storage') txt = t('tplStorageText');
+  if (key === 'transfer') txt = t('tplTransferText');
+  if (key === 'rights') txt = t('tplRightsText');
+  editor.value += (editor.value ? '\n\n' : '') + txt + '\n';
+}
+
+/* ================= Images ================= */
+function addImage() { if (!currentId) { alert(t('alertSelectRule')); return; } document.getElementById('imgInput').click(); }
+function handleImageSelect(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => { currentImages.push(ev.target.result); renderImages(); document.getElementById('statusBar').textContent = files.length + ' ' + t('statusBarImagesAdded'); };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+function renderImages() {
+  const box = document.getElementById('imagesList');
+  if (!currentImages.length) { box.innerHTML = `<span class="img-placeholder">${t('noImages')}</span>`; return; }
+  box.innerHTML = '';
+  currentImages.forEach((src, i) => {
+    const div = document.createElement('div');
+    div.className = 'img-thumb';
+    div.innerHTML = `<img src="${src}"><button class="img-del" onclick="removeImage(${i})">×</button>`;
+    box.appendChild(div);
+  });
+}
+function removeImage(idx) { if (!confirm(t('confirmDeleteImage') + '?')) return; currentImages.splice(idx, 1); renderImages(); }
+
+/* ================= Preview ================= */
+function showPreview() {
+  if (!currentId || !rules[currentId]) { alert(t('alertSelectRulePreview')); return; }
+  const r = rules[currentId];
+  document.getElementById('previewTitle').textContent = t('previewTitle') + ': ' + (r.title || 'Untitled');
+  let html = '';
+  html += `<div class="preview-meta"><strong>${t('labelVersion')}</strong> ${r.version || '1.0'} | <strong>${t('labelStatus')}</strong> ${r.status || 'Draft'} | <strong>${t('dlDate')}</strong> ${(r.updated || '').slice(0,19).replace('T',' ')}</div>`;
+  html += `<div class="preview-content">${escapeHtml(r.content || '')}</div>`;
+  if (currentImages.length) {
+    html += `<h4 style="margin-bottom:10px;">🖼️ ${t('imagesTitle').replace('🖼️ ','')}</h4><div class="preview-images">`;
+    currentImages.forEach(src => html += `<img src="${src}">`);
+    html += '</div>';
+  }
+  document.getElementById('previewBody').innerHTML = html;
+  openModal('previewModal');
+}
+
+/* ================= Export ================= */
+function exportFromPreview(fmt) {
+  if (!currentId || !rules[currentId]) return;
+  closeModal('previewModal');
+  if (fmt === 'txt') doExportTxt();
+  else if (fmt === 'md') doExportMd();
+}
+function doExportTxt() {
+  const r = rules[currentId];
+  const header = `========================================\n  ${t('editorLabel').replace('📝 ','').toUpperCase()}\n========================================\n\n${t('labelTitle')} ${r.title}\n${t('labelVersion')} ${r.version || '1.0'}\n${t('labelStatus')} ${r.status || 'Draft'}\n${t('dlDate')} ${r.created || ''}\n${t('dlDate')} ${r.updated || ''}\n\n----------------------------------------\n\n${r.content || ''}`;
+  downloadBlob(new Blob([header], {type:'text/plain'}), `${r.title || 'rule'}.txt`);
+  addDownloadRecord(`${r.title || 'rule'}.txt`, 'txt', r.title);
+}
+function doExportMd() {
+  const r = rules[currentId];
+  const text = `# ${r.title || 'Untitled'}\n\n> **${t('labelVersion')}** ${r.version || '1.0'}  \n> **${t('labelStatus')}** ${r.status || 'Draft'}  \n> **${t('dlDate')}** ${r.created || ''}  \n> **${t('dlDate')}** ${r.updated || ''}  \n\n---\n\n${r.content || ''}`;
+  downloadBlob(new Blob([text], {type:'text/markdown'}), `${r.title || 'rule'}.md`);
+  addDownloadRecord(`${r.title || 'rule'}.md`, 'md', r.title);
+}
+function downloadBlob(blob, filename) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+  document.getElementById('statusBar').textContent = t('statusBarExported') + ': ' + filename;
+}
+
+/* ================= Downloads ================= */
+function showDownloads() {
+  const dls = getDownloads();
+  const tbody = document.getElementById('downloadsBody');
+  tbody.innerHTML = '';
+  if (!dls.length) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--text-secondary);text-align:center;padding:24px;">${t('emptyHistory')}</td></tr>`;
+  } else {
+    dls.forEach(d => {
+      const tr = document.createElement('tr');
+      const date = (d.timestamp || '').slice(0,19).replace('T',' ');
+      tr.innerHTML = `<td>${escapeHtml(d.ruleName || '')}</td><td class="dl-fmt">${(d.format || '').toUpperCase()}</td><td>${escapeHtml(d.filename || '')}</td><td class="dl-date">${date}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  openModal('downloadsModal');
+}
+function clearDownloads() { if (!confirm('Clear history?')) return; saveDownloads([]); showDownloads(); }
+
+/* ================= Modals ================= */
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(el => { el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); }); });
+
+/* ================= Comments ================= */
+function renderComments() {
+  const box = document.getElementById('commentsList');
+  if (!currentId || !rules[currentId] || !(rules[currentId].comments || []).length) {
+    box.innerHTML = '<span style="color:var(--text-secondary);font-size:0.8rem;">No comments</span>';
+    return;
+  }
+  box.innerHTML = '';
+  rules[currentId].comments.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:8px 10px;border-radius:6px;background:var(--bg);margin-bottom:6px;font-size:0.85rem;';
+    const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
+    const delBtn = isAdmin || (currentUser && currentUser.toLowerCase() === (c.author || '').toLowerCase()) ? `<button class="btn btn-small btn-danger" style="margin-top:4px;" onclick="deleteComment(${i})">Delete</button>` : '';
+    div.innerHTML = `<div style="font-weight:600;color:var(--accent);font-size:0.8rem;margin-bottom:2px;">${escapeHtml(c.author || 'Anonymous')} • ${(c.date || '').slice(0,16).replace('T',' ')}</div><div>${escapeHtml(c.text)}</div>${delBtn}`;
+    box.appendChild(div);
+  });
+}
+function addComment() {
+  if (!currentId || !rules[currentId]) { alert('Select a rule first.'); return; }
+  const text = prompt('Enter comment:');
+  if (!text) return;
+  if (!rules[currentId].comments) rules[currentId].comments = [];
+  rules[currentId].comments.push({ author: currentUser || 'Guest', text, date: nowIso() });
+  saveData();
+  renderComments();
+}
+function deleteComment(idx) {
+  if (!currentId || !rules[currentId] || !rules[currentId].comments) return;
+  if (!confirm('Delete this comment?')) return;
+  rules[currentId].comments.splice(idx, 1);
+  saveData();
+  renderComments();
+}
+
+/* ================= Hotkeys ================= */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key.toLowerCase() === 'n') { e.preventDefault(); createNewRule(); }
+  if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); saveCurrentRule(); }
+  if (e.ctrlKey && e.key.toLowerCase() === 'f') { e.preventDefault(); document.getElementById('searchBox').focus(); }
+  if (e.ctrlKey && e.key.toLowerCase() === 'a') {
+    e.preventDefault();
+    if (currentUser && currentUser.toLowerCase() === 'testers@example.ru') {
+      alert('👑 Admin Panel: Full access granted.');
+    } else {
+      alert('⛔ Admin panel is only for testers@example.ru');
+    }
+  }
+  if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); openModal('settingsModal'); }
+  if (e.ctrlKey && e.key.toLowerCase() === 'd') { e.preventDefault(); showDownloads(); }
+});
+
+function clearAllData() {
+  if (!confirm('⚠️ Delete ALL rules, users, and settings?\nThis cannot be undone.')) return;
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('ph_') || k.startsWith('privacyhub_'));
+  keys.forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
+
+/* ================= Utils ================= */
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+/* ================= Init ================= */
+applyTheme();
+initAuth();
+initData();
+loadData();
+initPublicRules();
+renderUI();
+if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
+handleSharedLink();
+</script>
+</body>
+</html>
