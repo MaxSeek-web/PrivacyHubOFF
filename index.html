@@ -1502,6 +1502,32 @@ renderUI();
 if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
 handleSharedLink();
 trackEvent('page_view', { url: location.href });
+
+/* ================= Service Worker (Offline Page) ================= */
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE_NAME = 'ph-offline-v1';
+    const URLS_TO_CACHE = ['/', '/index.html', '/offline.html'];
+    self.addEventListener('install', event => {
+      event.waitUntil(
+        caches.open(CACHE_NAME).then(cache => cache.addAll(URLS_TO_CACHE))
+      );
+    });
+    self.addEventListener('fetch', event => {
+      event.respondWith(
+        fetch(event.request).catch(() => {
+          return caches.match(event.request).then(response => {
+            if (response) return response;
+            return caches.match('/offline.html');
+          });
+        })
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
 </script>
 </body>
 </html>
