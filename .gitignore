@@ -1,0 +1,9 @@
+# PrivacyHub
+
+__pycache__/
+build/
+dist/
+*.spec
+*.pyc
+*.pyo
+.privacyhub/
