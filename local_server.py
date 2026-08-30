@@ -11,20 +11,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def translate_path(self, path):
-        # Serve PrivacyHub-Web.html as index
+        # Serve index.html as index
         if path == '/' or path == '/index.html':
-            return os.path.join(DIRECTORY, 'PrivacyHub-Web.html')
+            return os.path.join(DIRECTORY, 'index.html')
         return super().translate_path(path)
 
 os.chdir(DIRECTORY)
 
-with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as httpd:
+with socketserver.TCPServer(("0.0.0.0", PORT), Handler) as httpd:
     print(f"=====================================")
-    print(f" PrivacyHub Local Server running!")
+    print(f" PrivacyHub Server running!")
     print(f"=====================================")
-    print(f" Local:  http://127.0.0.1:{PORT}")
-    print(f" Local:  http://localhost:{PORT}")
-    print(f" Local:  http://privacyhub.local:{PORT}")
+    print(f" LOCAL:     http://127.0.0.1:{PORT}")
+    print(f" LOCAL:     http://privacyhub.local:{PORT}")
+    print(f" EXTERNAL:  http://90.157.49.113:{PORT}")
     print(f"=====================================")
     print(f" Press Ctrl+C to stop")
     print(f"=====================================")

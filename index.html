@@ -278,6 +278,7 @@ body {
         <option value="kk">Қазақша</option>
       </select>
       <button class="btn btn-ghost btn-small" id="authBtn" onclick="handleAuthClick()">🚪 Login</button>
+      <button class="btn btn-ghost btn-small" id="adminBtn" style="display:none;" onclick="openAdminPanel()">👑 Admin</button>
       <button class="btn btn-ghost btn-small" onclick="openModal('settingsModal')">⚙️ <span data-i18n="settings">Settings</span></button>
       <button class="btn btn-success" onclick="createNewRule()" data-i18n="newRule">➕ New Rule</button>
       <button class="btn btn-danger" onclick="deleteCurrentRule()" data-i18n="delete">🗑️ Delete</button>
@@ -425,6 +426,24 @@ body {
     <div class="modal-footer">
       <button class="btn btn-small btn-success" onclick="savePublicToMy()" data-i18n="saveToMy">💾 Save to My Rules</button>
       <button class="btn btn-small" onclick="closeModal('publicViewModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Modal -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box modal-box-small">
+    <div class="modal-header"><h2>👑 Admin Panel</h2></div>
+    <div class="modal-body">
+      <p style="color:var(--text-secondary);font-size:0.9rem;">Admin controls for testers@example.ru</p>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Local Data</button>
+        <button class="btn btn-warning" onclick="showPublicBrowser();closeModal('adminModal');">🌍 Manage Public Rules</button>
+        <button class="btn btn-primary" onclick="location.reload()">🔄 Reload App</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small" onclick="closeModal('adminModal')" data-i18n="close">❌ Close</button>
     </div>
   </div>
 </div>
@@ -676,12 +695,20 @@ function initAuth() {
 }
 function updateAuthBtn() {
   const btn = document.getElementById('authBtn');
+  const adminBtn = document.getElementById('adminBtn');
   if (!btn) return;
   if (currentUser) {
     btn.innerHTML = '👤 ' + escapeHtml(currentUser) + ' | ' + t('logout');
+    if (adminBtn) adminBtn.style.display = (currentUser.toLowerCase() === 'testers@example.ru') ? 'inline-flex' : 'none';
   } else {
     btn.innerHTML = t('login');
+    if (adminBtn) adminBtn.style.display = 'none';
   }
+}
+function openAdminPanel() {
+  const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
+  if (!isAdmin) { alert('⛔ Admin panel is only for testers@example.ru'); return; }
+  openModal('adminModal');
 }
 function handleAuthClick() {
   if (currentUser) logout();
@@ -1306,6 +1333,13 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); openModal('settingsModal'); }
   if (e.ctrlKey && e.key.toLowerCase() === 'd') { e.preventDefault(); showDownloads(); }
 });
+
+function clearAllData() {
+  if (!confirm('⚠️ Delete ALL rules, users, and settings?\nThis cannot be undone.')) return;
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('ph_') || k.startsWith('privacyhub_'));
+  keys.forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
 
 /* ================= Utils ================= */
 function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
