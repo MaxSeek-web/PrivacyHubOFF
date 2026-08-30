@@ -266,6 +266,16 @@ body {
 <body>
 
 <div class="app-wrapper" id="app">
+  <div id="serverOverlay" style="display:none;position:fixed;inset:0;background:rgba(11,12,16,0.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">
+    <div style="font-size:4rem;margin-bottom:16px;">🔧</div>
+    <h1 style="font-size:1.6rem;margin-bottom:12px;color:var(--text-primary);">Технические работы</h1>
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(248,81,73,0.15);color:#F85149;padding:10px 18px;border-radius:8px;font-size:0.9rem;font-weight:600;margin-bottom:20px;">
+      <span style="width:10px;height:10px;background:#F85149;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>
+      <span>Сервер временно недоступен</span>
+    </div>
+    <p style="color:var(--text-secondary);max-width:400px;line-height:1.6;margin-bottom:24px;">Сайт PrivacyHub находится на обслуживании.<br>Попробуйте обновить страницу через несколько минут.</p>
+    <button class="btn" onclick="checkServerLoop()">🔄 Проверить снова</button>
+  </div>
   <header class="topbar">
     <a href="#" class="logo" onclick="return false;">
       <span class="logo-icon">🛡️</span>
@@ -1503,31 +1513,38 @@ if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
 handleSharedLink();
 trackEvent('page_view', { url: location.href });
 
-/* ================= Service Worker (Offline Page) ================= */
-if ('serviceWorker' in navigator) {
-  const swCode = `
-    const CACHE_NAME = 'ph-offline-v1';
-    const URLS_TO_CACHE = ['/', '/index.html', '/offline.html'];
-    self.addEventListener('install', event => {
-      event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(URLS_TO_CACHE))
-      );
-    });
-    self.addEventListener('fetch', event => {
-      event.respondWith(
-        fetch(event.request).catch(() => {
-          return caches.match(event.request).then(response => {
-            if (response) return response;
-            return caches.match('/offline.html');
-          });
-        })
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(() => {});
+/* ================= Server Ping (Show/Hide Offline Overlay) ================= */
+const SERVER_URL = 'http://127.0.0.1:8080';
+let serverOnline = true;
+
+async function pingServer() {
+  try {
+    const resp = await fetch(SERVER_URL + '/api/ping', { method: 'GET', mode: 'cors', cache: 'no-store' });
+    if (resp.ok) {
+      if (!serverOnline) {
+        serverOnline = true;
+        document.getElementById('serverOverlay').style.display = 'none';
+        console.log('✅ Server is back online');
+      }
+    } else {
+      throw new Error('not ok');
+    }
+  } catch (e) {
+    if (serverOnline) {
+      serverOnline = false;
+      document.getElementById('serverOverlay').style.display = 'flex';
+      console.log('🔧 Server offline overlay shown');
+    }
+  }
 }
+
+function checkServerLoop() {
+  pingServer();
+  setInterval(pingServer, 5000);
+}
+
+// Start checking after 2 seconds
+checkServerLoop();
 </script>
 </body>
 </html>

@@ -70,7 +70,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path == "/api/analytics":
+        if parsed.path == "/api/ping":
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "ok", "time": time.time()}).encode())
+        elif parsed.path == "/api/analytics":
             data = load_analytics()
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
