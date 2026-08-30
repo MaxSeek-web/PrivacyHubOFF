@@ -412,9 +412,10 @@ body {
       <div class="auth-tabs" style="margin-bottom:12px;">
         <button class="btn btn-small auth-tab active" id="tabCommunity" onclick="showPublicTab('community')">👥 Community</button>
         <button class="btn btn-small auth-tab" id="tabAuthors" onclick="showPublicTab('authors')">✍️ Authors</button>
+        <button class="btn btn-small auth-tab" id="tabMyRules" onclick="showPublicTab('myrules')">📂 My Rules</button>
       </div>
       <div id="publicListBox">
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:14px;" id="publicDesc">Rules shared by the community. Click to view.</p>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:14px;" id="publicDesc">All public rules shared by users. Click to view.</p>
         <div class="public-list" id="publicList"></div>
       </div>
     </div>
@@ -1079,30 +1080,49 @@ function showPublicTab(target) {
   currentPublicTab = target;
   const tabComm = document.getElementById('tabCommunity');
   const tabAuth = document.getElementById('tabAuthors');
+  const tabMy = document.getElementById('tabMyRules');
   const desc = document.getElementById('publicDesc');
   if (tabComm) tabComm.classList.toggle('active', target === 'community');
   if (tabAuth) tabAuth.classList.toggle('active', target === 'authors');
-  if (desc) desc.textContent = target === 'community' ? 'Rules published to Community by admins.' : 'Rules shared by authors. Click to view.';
+  if (tabMy) tabMy.classList.toggle('active', target === 'myrules');
+  if (desc) {
+    if (target === 'community') desc.textContent = 'All public rules shared by users. Click to view.';
+    else if (target === 'authors') desc.textContent = 'Rules published by authors. Click to view.';
+    else desc.textContent = 'Your published rules. Click to view.';
+  }
   renderPublicList(target);
 }
 function renderPublicList(target) {
   const list = document.getElementById('publicList');
   list.innerHTML = '';
-  const arr = getPublicRules().filter(r => (r.target || 'authors') === target);
+  let arr = getPublicRules();
   const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
+  if (target === 'community') {
+    // Community shows ALL public rules
+    arr = arr;
+  } else if (target === 'authors') {
+    // Authors shows only authors target rules
+    arr = arr.filter(r => (r.target || 'authors') === 'authors');
+  } else if (target === 'myrules') {
+    // My Rules shows current user's rules
+    arr = arr.filter(r => currentUser && (r.author || '').toLowerCase() === currentUser.toLowerCase());
+  }
   if (!arr.length) {
-    list.innerHTML = `<div style="color:var(--text-secondary);text-align:center;padding:24px;">No rules in ${target} yet.</div>`;
+    list.innerHTML = `<div style="color:var(--text-secondary);text-align:center;padding:24px;">No rules here yet.</div>`;
     return;
   }
   arr.forEach((rule, idx) => {
     const el = document.createElement('div');
     el.className = 'public-item';
     const emoji = STATUS_EMOJI[rule.status] || '📝';
+    const targetBadge = rule.target === 'community'
+      ? '<span style="background:var(--warning);color:#000;padding:2px 6px;border-radius:4px;font-size:0.7rem;margin-left:6px;">Community</span>'
+      : '<span style="background:var(--accent);color:#fff;padding:2px 6px;border-radius:4px;font-size:0.7rem;margin-left:6px;">Authors</span>';
     const delBtn = isAdmin ? `<button class="btn btn-small btn-danger" style="margin-left:auto;" onclick="event.stopPropagation();deletePublicRule('${rule.pub_id || rule.id || idx}', '${target}')">🗑️</button>` : '';
     el.innerHTML = `
       <span class="public-item-emoji">${emoji}</span>
       <div class="public-item-info">
-        <div class="public-item-title">${escapeHtml(rule.title || 'Untitled')}</div>
+        <div class="public-item-title">${escapeHtml(rule.title || 'Untitled')}${targetBadge}</div>
         <div class="public-item-meta">${escapeHtml(rule.author || '')} • ${rule.date || ''} • ${rule.lang || 'en'}</div>
       </div>${delBtn}`;
     el.onclick = () => { viewingPublicRule = rule; showPublicViewModal(rule); };
