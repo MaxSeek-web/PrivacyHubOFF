@@ -444,13 +444,28 @@ body {
     <div class="modal-body">
       <p style="color:var(--text-secondary);font-size:0.9rem;">Admin controls for testers@example.ru</p>
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
-        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Local Data</button>
+        <button class="btn btn-primary" onclick="showAnalytics();closeModal('adminModal');">📊 View Analytics</button>
         <button class="btn btn-warning" onclick="showPublicBrowser();closeModal('adminModal');">🌍 Manage Public Rules</button>
-        <button class="btn btn-primary" onclick="location.reload()">🔄 Reload App</button>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Local Data</button>
+        <button class="btn btn-ghost" onclick="location.reload()">🔄 Reload App</button>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-small" onclick="closeModal('adminModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Modal -->
+<div class="modal-overlay" id="analyticsModal">
+  <div class="modal-box" style="max-width:900px;">
+    <div class="modal-header"><h2>📊 Analytics Dashboard</h2></div>
+    <div class="modal-body" id="analyticsBody">
+      <p style="color:var(--text-secondary);">Loading analytics...</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small btn-danger" onclick="clearAnalytics()">🗑️ Clear Analytics</button>
+      <button class="btn btn-small" onclick="closeModal('analyticsModal')" data-i18n="close">❌ Close</button>
     </div>
   </div>
 </div>
@@ -763,6 +778,7 @@ function login() {
   }
   currentUser = found.email;
   localStorage.setItem(CURRENT_USER_KEY, currentUser);
+  trackEvent('login', { email: found.email });
 
   // Migrate guest rules to user-specific if needed
   const userKey = getRulesKey();
@@ -809,6 +825,7 @@ function register() {
   saveUsers(users);
   currentUser = email;
   localStorage.setItem(CURRENT_USER_KEY, currentUser);
+  trackEvent('register', { email });
 
   // Migrate guest rules to user-specific if needed
   const userKey = getRulesKey();
@@ -1020,6 +1037,7 @@ function doPublish() {
   document.getElementById('publishLinkBox').style.display = 'block';
   document.getElementById('btnDoPublish').style.display = 'none';
   addPublicRule(shareObj);
+  trackEvent('publish', { ruleId: currentId, title: r.title, target: target });
 }
 function copyPublishLink() {
   const text = document.getElementById('publishLink').textContent;
@@ -1192,6 +1210,7 @@ function createNewRule() {
   const id = genId();
   rules[id] = { title, version: '1.0', status: 'Draft', content: '', images: [], created: nowIso(), updated: nowIso() };
   saveData(); currentId = id;
+  trackEvent('rule_create', { ruleId: id, title: title });
   document.getElementById('ruleTitle').value = title;
   document.getElementById('ruleVersion').value = '1.0';
   document.getElementById('ruleStatus').value = 'Draft';
@@ -1204,7 +1223,9 @@ function deleteCurrentRule() {
   if (!currentId || !rules[currentId]) { alert(t('alertSelectRuleDelete')); return; }
   const title = rules[currentId].title || '';
   if (!confirm(`${t('confirmDeleteRule')} "${title}"?`)) return;
+  const deletedTitle = rules[currentId].title || '';
   delete rules[currentId]; saveData(); currentId = null;
+  trackEvent('rule_delete', { title: deletedTitle });
   document.getElementById('ruleTitle').value = '';
   document.getElementById('ruleVersion').value = '1.0';
   document.getElementById('ruleStatus').value = 'Draft';
@@ -1221,6 +1242,7 @@ function saveCurrentRule() {
   rules[currentId].content = document.getElementById('ruleEditor').value;
   rules[currentId].images = [...currentImages];
   rules[currentId].updated = nowIso(); saveData();
+  trackEvent('rule_save', { ruleId: currentId, title: rules[currentId].title });
   refreshList(); document.getElementById('statusBar').textContent = t('statusBarSaved');
 }
 
@@ -1349,6 +1371,7 @@ function addComment() {
   if (!rules[currentId].comments) rules[currentId].comments = [];
   rules[currentId].comments.push({ author: currentUser || 'Guest', text, date: nowIso() });
   saveData();
+  trackEvent('comment_add', { ruleId: currentId, author: currentUser || 'Guest' });
   renderComments();
 }
 function deleteComment(idx) {
@@ -1357,6 +1380,96 @@ function deleteComment(idx) {
   rules[currentId].comments.splice(idx, 1);
   saveData();
   renderComments();
+}
+
+/* ================= Analytics ================= */
+const ANALYTICS_KEY = 'ph_analytics';
+function trackEvent(eventType, detail) {
+  const raw = localStorage.getItem(ANALYTICS_KEY);
+  const events = raw ? JSON.parse(raw) : [];
+  events.push({
+    type: eventType,
+    detail: detail || {},
+    user: currentUser || 'Guest',
+    timestamp: new Date().toISOString(),
+    userAgent: navigator.userAgent.substring(0, 120)
+  });
+  // keep last 2000 events
+  if (events.length > 2000) events.splice(0, events.length - 2000);
+  localStorage.setItem(ANALYTICS_KEY, JSON.stringify(events));
+}
+function getAnalyticsEvents() {
+  const raw = localStorage.getItem(ANALYTICS_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+function showAnalytics() {
+  const events = getAnalyticsEvents();
+  const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
+  if (!isAdmin) { alert('⛔ Analytics is admin-only'); return; }
+  const total = events.length;
+  const logins = events.filter(e => e.type === 'login').length;
+  const registers = events.filter(e => e.type === 'register').length;
+  const creates = events.filter(e => e.type === 'rule_create').length;
+  const saves = events.filter(e => e.type === 'rule_save').length;
+  const deletes = events.filter(e => e.type === 'rule_delete').length;
+  const publishes = events.filter(e => e.type === 'publish').length;
+  const comments = events.filter(e => e.type === 'comment_add').length;
+  const uniqueUsers = [...new Set(events.filter(e => e.user && e.user !== 'Guest').map(e => e.user))].length;
+  // top users by activity
+  const userCounts = {};
+  events.forEach(e => { const u = e.user || 'Guest'; userCounts[u] = (userCounts[u] || 0) + 1; });
+  const topUsers = Object.entries(userCounts).sort((a,b) => b[1] - a[1]).slice(0, 10);
+  const topUsersHtml = topUsers.map(([u,c]) => `<tr><td>${escapeHtml(u)}</td><td>${c}</td></tr>`).join('');
+  // recent events table
+  const recent = events.slice(-30).reverse().map(e => {
+    const ts = (e.timestamp || '').slice(0,19).replace('T',' ');
+    return `<tr><td style="color:var(--text-secondary);font-size:0.78rem;">${ts}</td><td style="font-size:0.78rem;"><span style="color:var(--accent);font-weight:600;">${e.type}</span></td><td style="font-size:0.78rem;">${escapeHtml(e.user || 'Guest')}</td></tr>`;
+  }).join('');
+  const html = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--accent);">${total}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Total Events</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--success);">${uniqueUsers}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Unique Users</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--warning);">${creates}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Rules Created</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--danger);">${publishes}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Publishes</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+      <div>
+        <h4 style="margin-bottom:8px;font-size:0.9rem;">📊 Events Breakdown</h4>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.85rem;line-height:1.8;">
+          Logins: <strong>${logins}</strong><br>
+          Registers: <strong>${registers}</strong><br>
+          Rule Creates: <strong>${creates}</strong><br>
+          Rule Saves: <strong>${saves}</strong><br>
+          Rule Deletes: <strong>${deletes}</strong><br>
+          Publishes: <strong>${publishes}</strong><br>
+          Comments: <strong>${comments}</strong>
+        </div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:8px;font-size:0.9rem;">🏆 Top Active Users</h4>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;max-height:200px;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+            <thead><tr style="color:var(--text-secondary);"><th style="text-align:left;padding:4px;">User</th><th style="text-align:right;padding:4px;">Events</th></tr></thead>
+            <tbody>${topUsersHtml}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <h4 style="margin-bottom:8px;font-size:0.9rem;">📋 Recent Events (last 30)</h4>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;max-height:220px;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+        <thead><tr style="color:var(--text-secondary);"><th style="text-align:left;padding:4px;">Time</th><th style="text-align:left;padding:4px;">Event</th><th style="text-align:left;padding:4px;">User</th></tr></thead>
+        <tbody>${recent}</tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('analyticsBody').innerHTML = html;
+  openModal('analyticsModal');
+}
+function clearAnalytics() {
+  if (!confirm('Clear all analytics data?')) return;
+  localStorage.removeItem(ANALYTICS_KEY);
+  showAnalytics();
 }
 
 /* ================= Hotkeys ================= */
@@ -1395,6 +1508,7 @@ initPublicRules();
 renderUI();
 if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
 handleSharedLink();
+trackEvent('page_view', { url: location.href });
 </script>
 </body>
 </html>
