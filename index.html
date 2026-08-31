@@ -1421,51 +1421,86 @@ function trackEvent(eventType, detail) {
 async function showAnalytics() {
   const isAdmin = currentUser && currentUser.toLowerCase() === 'testers@example.ru';
   if (!isAdmin) { alert('⛔ Analytics is admin-only'); return; }
-  document.getElementById('analyticsBody').innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:24px;">Loading analytics from server...</div>';
+  document.getElementById('analyticsBody').innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:24px;">Loading analytics...</div>';
   openModal('analyticsModal');
+
+  // Try server first, fallback to localStorage
+  let stats = null;
+  let source = 'local';
   try {
-    const resp = await fetch(`${SERVER_API}/api/stats`);
-    const stats = await resp.json();
-    const topUsersHtml = (stats.top_users || []).map(([u,c]) => `<tr><td>${escapeHtml(u)}</td><td>${c}</td></tr>`).join('');
-    const html = `
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--accent);">${stats.total || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Total Events</div></div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--success);">${stats.unique_users_count || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Unique Users</div></div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--warning);">${stats.creates || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Rules Created</div></div>
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--danger);">${stats.publishes || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Publishes</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
-        <div>
-          <h4 style="margin-bottom:8px;font-size:0.9rem;">📊 Events Breakdown</h4>
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.85rem;line-height:1.8;">
-            Logins: <strong>${stats.logins || 0}</strong><br>
-            Registers: <strong>${stats.registers || 0}</strong><br>
-            Rule Creates: <strong>${stats.creates || 0}</strong><br>
-            Rule Saves: <strong>${stats.saves || 0}</strong><br>
-            Rule Deletes: <strong>${stats.deletes || 0}</strong><br>
-            Publishes: <strong>${stats.publishes || 0}</strong><br>
-            Comments: <strong>${stats.comments || 0}</strong>
-          </div>
-        </div>
-        <div>
-          <h4 style="margin-bottom:8px;font-size:0.9rem;">🏆 Top Active Users</h4>
-          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;max-height:200px;">
-            <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
-              <thead><tr style="color:var(--text-secondary);"><th style="text-align:left;padding:4px;">User</th><th style="text-align:right;padding:4px;">Events</th></tr></thead>
-              <tbody>${topUsersHtml || '<tr><td colspan="2">No data</td></tr>'}</tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:16px;">
-        <div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px;">📋 Server-side analytics active. Data persists across server restarts.</div>
-        <div style="font-size:0.82rem;color:var(--text-secondary);">Unique users: ${(stats.unique_users || []).join(', ') || 'None yet'}</div>
-      </div>
-    `;
-    document.getElementById('analyticsBody').innerHTML = html;
+    const resp = await fetch(`${SERVER_API}/api/stats`, { method: 'GET', cache: 'no-store' });
+    if (resp.ok) {
+      stats = await resp.json();
+      source = 'server';
+    }
   } catch (e) {
-    document.getElementById('analyticsBody').innerHTML = '<div style="color:var(--danger);text-align:center;padding:24px;">⚠️ Server offline or no data. Start the server to see analytics.</div>';
+    // server offline
   }
+
+  // If no server stats, compute from localStorage
+  if (!stats) {
+    const raw = localStorage.getItem(ANALYTICS_KEY);
+    const events = raw ? JSON.parse(raw) : [];
+    const total = events.length;
+    const logins = events.filter(e => e.type === 'login').length;
+    const registers = events.filter(e => e.type === 'register').length;
+    const creates = events.filter(e => e.type === 'rule_create').length;
+    const saves = events.filter(e => e.type === 'rule_save').length;
+    const deletes = events.filter(e => e.type === 'rule_delete').length;
+    const publishes = events.filter(e => e.type === 'publish').length;
+    const comments = events.filter(e => e.type === 'comment_add').length;
+    const userCounts = {};
+    events.forEach(e => {
+      const u = e.user || 'Guest';
+      userCounts[u] = (userCounts[u] || 0) + 1;
+    });
+    const uniqueUsers = Object.keys(userCounts).filter(u => u && u !== 'Guest');
+    const topUsers = Object.entries(userCounts).sort((a,b) => b[1] - a[1]).slice(0,10);
+    stats = {
+      total, logins, registers, creates, saves, deletes, publishes, comments,
+      unique_users_count: uniqueUsers.length,
+      unique_users: uniqueUsers,
+      top_users: topUsers
+    };
+  }
+
+  const topUsersHtml = (stats.top_users || []).map(([u,c]) => `<tr><td>${escapeHtml(u)}</td><td>${c}</td></tr>`).join('');
+  const html = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--accent);">${stats.total || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Total Events</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--success);">${stats.unique_users_count || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Unique Users</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--warning);">${stats.creates || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Rules Created</div></div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--danger);">${stats.publishes || 0}</div><div style="font-size:0.78rem;color:var(--text-secondary);">Publishes</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+      <div>
+        <h4 style="margin-bottom:8px;font-size:0.9rem;">📊 Events Breakdown</h4>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.85rem;line-height:1.8;">
+          Logins: <strong>${stats.logins || 0}</strong><br>
+          Registers: <strong>${stats.registers || 0}</strong><br>
+          Rule Creates: <strong>${stats.creates || 0}</strong><br>
+          Rule Saves: <strong>${stats.saves || 0}</strong><br>
+          Rule Deletes: <strong>${stats.deletes || 0}</strong><br>
+          Publishes: <strong>${stats.publishes || 0}</strong><br>
+          Comments: <strong>${stats.comments || 0}</strong>
+        </div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:8px;font-size:0.9rem;">🏆 Top Active Users</h4>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;max-height:200px;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+            <thead><tr style="color:var(--text-secondary);"><th style="text-align:left;padding:4px;">User</th><th style="text-align:right;padding:4px;">Events</th></tr></thead>
+            <tbody>${topUsersHtml || '<tr><td colspan="2">No data</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:16px;">
+      <div style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:6px;">📋 Analytics source: ${source === 'server' ? 'Server (persisted across sessions)' : 'Browser localStorage (client-side only)'}</div>
+      <div style="font-size:0.82rem;color:var(--text-secondary);">Unique users: ${(stats.unique_users || []).join(', ') || 'None yet'}</div>
+    </div>
+  `;
+  document.getElementById('analyticsBody').innerHTML = html;
 }
 function clearAnalytics() {
   if (!confirm('Clear all analytics data?')) return;
