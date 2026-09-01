@@ -1538,7 +1538,7 @@ function deleteComment(idx) {
 
 /* ================= Analytics (Server-side) ================= */
 const ANALYTICS_KEY = 'ph_analytics';
-const SERVER_API = '';
+const SERVER_API = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') ? '' : 'http://127.0.0.1:8080';
 function trackEvent(eventType, detail) {
   const payload = {
     type: eventType,
