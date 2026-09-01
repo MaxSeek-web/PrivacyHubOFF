@@ -1434,66 +1434,117 @@ function showDownloads() {
 }
 function clearDownloads() { if (!confirm('Clear history?')) return; saveDownloads([]); showDownloads(); }
 
-/* ================= Schedule ================= */
+/* ================= Schedule (Server Sync) ================= */
 const SCHEDULE_KEY = 'ph_schedule';
-function getSchedule() { const raw = localStorage.getItem(SCHEDULE_KEY); return raw ? JSON.parse(raw) : []; }
-function saveSchedule(items) { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(items)); }
-function showScheduleModal() {
-  renderUI();
+let _scheduleCache = null;
+
+// Load from server (with localStorage fallback)
+async function getSchedule() {
+  if (_scheduleCache !== null) return _scheduleCache;
+  // Try server first
+  if (SERVER_API) {
+    try {
+      const resp = await fetch(`${SERVER_API}/api/schedule`, { method: 'GET', cache: 'no-store' });
+      if (resp.ok) {
+        const data = await resp.json();
+        _scheduleCache = data.items || [];
+        return _scheduleCache;
+      }
+    } catch (e) {}
+  }
+  // Fallback to localStorage
+  const raw = localStorage.getItem(SCHEDULE_KEY);
+  _scheduleCache = raw ? JSON.parse(raw) : [];
+  return _scheduleCache;
+}
+
+// Save to server (with localStorage fallback)
+async function saveSchedule(items) {
+  _scheduleCache = items;
+  if (SERVER_API) {
+    try {
+      const resp = await fetch(`${SERVER_API}/api/schedule/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items })
+      });
+      if (resp.ok) { return; }
+    } catch (e) {}
+  }
+  localStorage.setItem(SCHEDULE_KEY, JSON.stringify(items));
+}
+
+function renderScheduleList(items) {
   const list = document.getElementById('scheduleList');
   list.innerHTML = '';
-  const items = getSchedule();
   if (!items.length) {
     list.innerHTML = `<div style="color:var(--text-secondary);text-align:center;padding:16px;">${t('scheduleNoEntries')}</div>`;
-  } else {
-    items.forEach((item, idx) => {
-      const div = document.createElement('div');
-      div.style.cssText = 'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;';
-      const today = new Date().toISOString().slice(0,10);
-      const isActive = item.start && item.end && today >= item.start && today <= item.end;
-      const statusBadge = isActive
-        ? `<span style="background:var(--success);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleActive')}</span>`
-        : (item.end && today > item.end ? `<span style="background:var(--text-secondary);color:var(--bg);padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleEnded')}</span>` : `<span style="background:var(--warning);color:#000;padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleUpcoming')}</span>`);
-      div.innerHTML = `
-        <div style="flex:1;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <span style="font-weight:700;font-size:0.92rem;">${escapeHtml(item.desc || 'Update')}</span>
-            ${statusBadge}
-          </div>
-          <div style="font-size:0.82rem;color:var(--text-secondary);">🗓️ ${item.start || '?'} → ${item.end || '?'} (${Math.max(0,Math.ceil((new Date(item.end||today)-new Date(item.start||today))/86400000))+1} ${t('scheduleDays')})</div>
-        </div>
-        <button class="btn btn-small btn-danger" onclick="deleteScheduleItem(${idx})" style="flex-shrink:0;">🗑️</button>
-      `;
-      list.appendChild(div);
-    });
+    return;
   }
-  openModal('scheduleModal');
+  items.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.style.cssText = 'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;';
+    const today = new Date().toISOString().slice(0,10);
+    const isActive = item.start && item.end && today >= item.start && today <= item.end;
+    const statusBadge = isActive
+      ? `<span style="background:var(--success);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleActive')}</span>`
+      : (item.end && today > item.end ? `<span style="background:var(--text-secondary);color:var(--bg);padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleEnded')}</span>` : `<span style="background:var(--warning);color:#000;padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleUpcoming')}</span>`);
+    div.innerHTML = `
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-weight:700;font-size:0.92rem;">${escapeHtml(item.desc || 'Update')}</span>
+          ${statusBadge}
+        </div>
+        <div style="font-size:0.82rem;color:var(--text-secondary);">🗓️ ${item.start || '?'} → ${item.end || '?'} (${Math.max(0,Math.ceil((new Date(item.end||today)-new Date(item.start||today))/86400000))+1} ${t('scheduleDays')})</div>
+      </div>
+      <button class="btn btn-small btn-danger" onclick="deleteScheduleItem(${idx})" style="flex-shrink:0;">🗑️</button>
+    `;
+    list.appendChild(div);
+  });
 }
-function addScheduleItem() {
+
+async function showScheduleModal() {
+  renderUI();
+  const list = document.getElementById('scheduleList');
+  list.innerHTML = '<div style="color:var(--text-secondary);text-align:center;padding:16px;">Loading schedule...</div>';
+  openModal('scheduleModal');
+  const items = await getSchedule();
+  renderScheduleList(items);
+}
+
+async function addScheduleItem() {
   const start = document.getElementById('schedStart').value;
   const end = document.getElementById('schedEnd').value;
   const desc = document.getElementById('schedDesc').value.trim();
   if (!start || !end || !desc) { alert(t('scheduleFillFields')); return; }
   if (start > end) { alert(t('scheduleEndAfterStart')); return; }
-  const items = getSchedule();
+  const items = await getSchedule();
   items.push({ start, end, desc, created: new Date().toISOString() });
-  saveSchedule(items);
+  await saveSchedule(items);
   document.getElementById('schedStart').value = '';
   document.getElementById('schedEnd').value = '';
   document.getElementById('schedDesc').value = '';
-  showScheduleModal();
+  renderScheduleList(items);
 }
-function deleteScheduleItem(idx) {
+
+async function deleteScheduleItem(idx) {
   if (!confirm(t('scheduleDeleteConfirm'))) return;
-  const items = getSchedule();
+  const items = await getSchedule();
   items.splice(idx, 1);
-  saveSchedule(items);
-  showScheduleModal();
+  await saveSchedule(items);
+  renderScheduleList(items);
 }
-function clearSchedule() {
+
+async function clearSchedule() {
   if (!confirm(t('scheduleClearConfirm'))) return;
+  _scheduleCache = [];
+  if (SERVER_API) {
+    try {
+      await fetch(`${SERVER_API}/api/schedule/clear`, { method: 'POST' });
+    } catch (e) {}
+  }
   localStorage.removeItem(SCHEDULE_KEY);
-  showScheduleModal();
+  renderScheduleList([]);
 }
 
 /* ================= Modals ================= */
@@ -1691,6 +1742,9 @@ renderUI();
 if (Object.keys(rules).length) selectRule(Object.keys(rules)[0]);
 handleSharedLink();
 trackEvent('page_view', { url: location.href });
+
+// Preload schedule from server in background
+getSchedule().catch(() => {});
 
 /* ================= Server Ping (Show/Hide Offline Overlay) ================= */
 const SERVER_URL = 'http://127.0.0.1:8080';

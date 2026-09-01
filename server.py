@@ -9,12 +9,29 @@ from urllib.parse import urlparse, parse_qs
 PORT = 8080
 DIR = os.path.dirname(os.path.abspath(__file__))
 ANALYTICS_FILE = os.path.join(DIR, "analytics.json")
+SCHEDULE_FILE = os.path.join(DIR, "schedule.json")
 PID_FILE = os.path.join(DIR, "server.pid")
 
 # Ensure analytics file exists
 if not os.path.exists(ANALYTICS_FILE):
     with open(ANALYTICS_FILE, "w", encoding="utf-8") as f:
         json.dump({"events": []}, f, ensure_ascii=False)
+
+# Ensure schedule file exists
+if not os.path.exists(SCHEDULE_FILE):
+    with open(SCHEDULE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"items": []}, f, ensure_ascii=False)
+
+def load_schedule():
+    try:
+        with open(SCHEDULE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {"items": []}
+
+def save_schedule(data):
+    with open(SCHEDULE_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_analytics():
     try:
@@ -64,6 +81,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(400)
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed.path == "/api/schedule/save":
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+            try:
+                payload = json.loads(body)
+                save_schedule({"items": payload.get("items", [])})
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "ok"}).encode())
+            except Exception as e:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed.path == "/api/schedule/clear":
+            save_schedule({"items": []})
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "ok"}).encode())
         else:
             self.send_response(404)
             self.end_headers()
@@ -116,6 +153,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps(stats, ensure_ascii=False).encode())
+        elif parsed.path == "/api/schedule":
+            data = load_schedule()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(data, ensure_ascii=False).encode())
         elif parsed.path == "/" or parsed.path == "/index.html":
             self.path = "/index.html"
             super().do_GET()
