@@ -344,6 +344,7 @@ body::before {
       <button class="btn" style="background:#8c4a0d;border-color:#E67E22;color:#fff;" onclick="showPublishModal()">📢 <span data-i18n="publish">Publish</span></button>
       <button class="btn btn-info" onclick="showPublicBrowser()">🌍 <span data-i18n="browsePublic">Public</span></button>
       <button class="btn btn-info" onclick="showDownloads()" data-i18n="downloads">📥 Downloads</button>
+      <button class="btn" style="background:#5d4037;border-color:#795548;color:#fff;" onclick="showScheduleModal()">📅 Schedule</button>
     </div>
   </header>
 
@@ -429,6 +430,31 @@ body::before {
     <div class="modal-footer">
       <button class="btn btn-small btn-danger" onclick="clearDownloads()" data-i18n="clearHistory">🗑️ Clear History</button>
       <button class="btn btn-small" onclick="closeModal('downloadsModal')" data-i18n="close">❌ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal-box" style="max-width:700px;">
+    <div class="modal-header"><h2 data-i18n="scheduleTitle">📅 Update Schedule</h2></div>
+    <div class="modal-body">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);" data-i18n="scheduleStart">Start Date</label>
+          <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);" data-i18n="scheduleEnd">End Date</label>
+          <input type="date" id="schedStart" style="padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-primary);font-family:var(--font-body);">
+          <input type="date" id="schedEnd" style="padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-primary);font-family:var(--font-body);">
+        </div>
+        <label style="font-weight:600;font-size:0.85rem;color:var(--text-secondary);display:block;margin-bottom:6px;" data-i18n="scheduleDesc">Description</label>
+        <textarea id="schedDesc" rows="2" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-primary);font-family:var(--font-body);font-size:0.9rem;resize:vertical;"></textarea>
+        <button class="btn btn-success" style="margin-top:10px;" onclick="addScheduleItem()" data-i18n="scheduleAdd">➕ Add Entry</button>
+      </div>
+      <div id="scheduleList" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-small btn-danger" onclick="clearSchedule()" data-i18n="clearHistory">🗑️ Clear All</button>
+      <button class="btn btn-small" onclick="closeModal('scheduleModal')" data-i18n="close">❌ Close</button>
     </div>
   </div>
 </div>
@@ -637,7 +663,10 @@ const i18n = {
     tplCollectText: `2.1. We collect only the data necessary to provide services.\n\n2.2. Categories of collected data include: name, email address, device technical data.`,
     tplStorageText: `3.1. Data is stored on secure servers.\n\n3.2. Only authorized employees have access to the data.\n\n3.3. We apply encryption and other protection measures.`,
     tplTransferText: `4.1. Personal data is not transferred to third parties without user consent.\n\n4.2. Exceptions are cases provided by law.`,
-    tplRightsText: `5.1. The user has the right to access their data.\n\n5.2. The user may demand correction, deletion, or restriction of data processing.`
+    tplRightsText: `5.1. The user has the right to access their data.\n\n5.2. The user may demand correction, deletion, or restriction of data processing.`,
+    scheduleTitle: "📅 Update Schedule", scheduleStart: "Start Date", scheduleEnd: "End Date", scheduleDesc: "Description", scheduleAdd: "➕ Add Entry",
+    scheduleNoEntries: "No scheduled updates yet.", scheduleActive: "ACTIVE", scheduleEnded: "ENDED", scheduleUpcoming: "UPCOMING", scheduleDays: "days",
+    scheduleFillFields: "Please fill in all fields.", scheduleEndAfterStart: "End date must be after start date.", scheduleDeleteConfirm: "Delete this entry?", scheduleClearConfirm: "Clear all schedule entries?"
   },
   ru: {
     settings: "Настройки", newRule: "➕ Новое правило", delete: "🗑️ Удалить", save: "💾 Сохранить",
@@ -675,7 +704,10 @@ const i18n = {
     tplCollectText: `2.1. Мы собираем только те данные, которые необходимы для предоставления услуг.\n\n2.2. К категориям собираемых данных относятся: имя, адрес электронной почты, технические данные устройства.`,
     tplStorageText: `3.1. Данные хранятся на защищённых серверах.\n\n3.2. Доступ к данным имеют только уполномоченные сотрудники.\n\n3.3. Мы применяем шифрование и другие меры защиты.`,
     tplTransferText: `4.1. Персональные данные не передаются третьим лицам без согласия пользователя.\n\n4.2. Исключение составляют случаи, предусмотренные законодательством.`,
-    tplRightsText: `5.1. Пользователь имеет право на доступ к своим данным.\n\n5.2. Пользователь может требовать исправления, удаления или ограничения обработки данных.`
+    tplRightsText: `5.1. Пользователь имеет право на доступ к своим данным.\n\n5.2. Пользователь может требовать исправления, удаления или ограничения обработки данных.`,
+    scheduleTitle: "📅 Расписание обновлений", scheduleStart: "Дата начала", scheduleEnd: "Дата окончания", scheduleDesc: "Описание", scheduleAdd: "➕ Добавить запись",
+    scheduleNoEntries: "Запланированных обновлений пока нет.", scheduleActive: "АКТИВНО", scheduleEnded: "ЗАВЕРШЕНО", scheduleUpcoming: "ПЛАНИРУЕТСЯ", scheduleDays: "дн.",
+    scheduleFillFields: "Заполните все поля.", scheduleEndAfterStart: "Дата окончания должна быть позже даты начала.", scheduleDeleteConfirm: "Удалить эту запись?", scheduleClearConfirm: "Очистить всё расписание?"
   },
   kk: {
     settings: "Параметрлер", newRule: "➕ Жаңа ереже", delete: "🗑️ Жою", save: "💾 Сақтау",
@@ -713,7 +745,10 @@ const i18n = {
     tplCollectText: `2.1. Біз тек қызметтерді көрсетуге қажетті деректерді жинаймыз.\n\n2.2. Жиналатын деректерге: аты, электрондық пошта мекенжайы, құрылғының техникалық деректері жатады.`,
     tplStorageText: `3.1. Деректер қорғалған серверлерде сақталады.\n\n3.2. Деректерге тек уәкілетті қызметкерлер қол жеткізе алады.\n\n3.3. Біз шифрлау және басқа қорғау шараларын қолданамыз.`,
     tplTransferText: `4.1. Жеке деректер пайдаланушының келісімінсіз үшінші тұлғаларға берілмейді.\n\n4.2. Заңда көзделген жағдайлар осыдан бөлек.`,
-    tplRightsText: `5.1. Пайдаланушы өз деректеріне қол жеткізу құқығына ие.\n\n5.2. Пайдаланушы деректерді түзетуді, жоюды немесе өңдеуді шектеуді талап ете алады.`
+    tplRightsText: `5.1. Пайдаланушы өз деректеріне қол жеткізу құқығына ие.\n\n5.2. Пайдаланушы деректерді түзетуді, жоюды немесе өңдеуді шектеуді талап ете алады.`,
+    scheduleTitle: "📅 Жаңартулар кестесі", scheduleStart: "Басталған күні", scheduleEnd: "Аяқталған күні", scheduleDesc: "Сипаттама", scheduleAdd: "➕ Жазба қосу",
+    scheduleNoEntries: "Жоспарланған жаңартулар жоқ.", scheduleActive: "БЕЛСЕНДІ", scheduleEnded: "АЯҚТАЛДЫ", scheduleUpcoming: "ЖОСПАРЛАНУДА", scheduleDays: "күн",
+    scheduleFillFields: "Барлық өрістерді толтырыңыз.", scheduleEndAfterStart: "Аяқталу күні басталу күнінен кейін болуы керек.", scheduleDeleteConfirm: "Бұл жазбаны жоясыз ба?", scheduleClearConfirm: "Барлық кестені тазалау?"
   }
 };
 
@@ -1398,6 +1433,68 @@ function showDownloads() {
   openModal('downloadsModal');
 }
 function clearDownloads() { if (!confirm('Clear history?')) return; saveDownloads([]); showDownloads(); }
+
+/* ================= Schedule ================= */
+const SCHEDULE_KEY = 'ph_schedule';
+function getSchedule() { const raw = localStorage.getItem(SCHEDULE_KEY); return raw ? JSON.parse(raw) : []; }
+function saveSchedule(items) { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(items)); }
+function showScheduleModal() {
+  renderUI();
+  const list = document.getElementById('scheduleList');
+  list.innerHTML = '';
+  const items = getSchedule();
+  if (!items.length) {
+    list.innerHTML = `<div style="color:var(--text-secondary);text-align:center;padding:16px;">${t('scheduleNoEntries')}</div>`;
+  } else {
+    items.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.style.cssText = 'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;';
+      const today = new Date().toISOString().slice(0,10);
+      const isActive = item.start && item.end && today >= item.start && today <= item.end;
+      const statusBadge = isActive
+        ? `<span style="background:var(--success);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleActive')}</span>`
+        : (item.end && today > item.end ? `<span style="background:var(--text-secondary);color:var(--bg);padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleEnded')}</span>` : `<span style="background:var(--warning);color:#000;padding:2px 8px;border-radius:12px;font-size:0.72rem;font-weight:700;">${t('scheduleUpcoming')}</span>`);
+      div.innerHTML = `
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="font-weight:700;font-size:0.92rem;">${escapeHtml(item.desc || 'Update')}</span>
+            ${statusBadge}
+          </div>
+          <div style="font-size:0.82rem;color:var(--text-secondary);">🗓️ ${item.start || '?'} → ${item.end || '?'} (${Math.max(0,Math.ceil((new Date(item.end||today)-new Date(item.start||today))/86400000))+1} ${t('scheduleDays')})</div>
+        </div>
+        <button class="btn btn-small btn-danger" onclick="deleteScheduleItem(${idx})" style="flex-shrink:0;">🗑️</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+  openModal('scheduleModal');
+}
+function addScheduleItem() {
+  const start = document.getElementById('schedStart').value;
+  const end = document.getElementById('schedEnd').value;
+  const desc = document.getElementById('schedDesc').value.trim();
+  if (!start || !end || !desc) { alert(t('scheduleFillFields')); return; }
+  if (start > end) { alert(t('scheduleEndAfterStart')); return; }
+  const items = getSchedule();
+  items.push({ start, end, desc, created: new Date().toISOString() });
+  saveSchedule(items);
+  document.getElementById('schedStart').value = '';
+  document.getElementById('schedEnd').value = '';
+  document.getElementById('schedDesc').value = '';
+  showScheduleModal();
+}
+function deleteScheduleItem(idx) {
+  if (!confirm(t('scheduleDeleteConfirm'))) return;
+  const items = getSchedule();
+  items.splice(idx, 1);
+  saveSchedule(items);
+  showScheduleModal();
+}
+function clearSchedule() {
+  if (!confirm(t('scheduleClearConfirm'))) return;
+  localStorage.removeItem(SCHEDULE_KEY);
+  showScheduleModal();
+}
 
 /* ================= Modals ================= */
 function openModal(id) { document.getElementById(id).classList.add('active'); }
