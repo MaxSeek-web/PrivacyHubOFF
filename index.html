@@ -3,41 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PrivacyHub Web</title>
+<title>PrivacyHub 🍂 Autumn Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0B0C10;
-  --surface: #161B22;
-  --surface-hover: #1F2833;
-  --surface-elevated: #21262D;
-  --text-primary: #E6EDF3;
-  --text-secondary: #8B949E;
-  --accent: #58A6FF;
-  --accent-hover: #79B8FF;
-  --border: #30363D;
-  --success: #3FB950;
-  --warning: #D29922;
-  --danger: #F85149;
+  --bg: #1A120B;
+  --surface: #2C1810;
+  --surface-hover: #3E2723;
+  --surface-elevated: #4E342E;
+  --text-primary: #F5E6D3;
+  --text-secondary: #BCAAA4;
+  --accent: #E67E22;
+  --accent-hover: #F39C12;
+  --border: #5D4037;
+  --success: #27AE60;
+  --warning: #F39C12;
+  --danger: #C0392B;
   --font-display: "Outfit", system-ui, sans-serif;
   --font-body: "DM Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 .light-theme {
-  --bg: #FFFFFF;
-  --surface: #F6F8FA;
-  --surface-hover: #EFF1F3;
+  --bg: #FFF3E0;
+  --surface: #FFE0B2;
+  --surface-hover: #FFCC80;
   --surface-elevated: #FFFFFF;
-  --text-primary: #1F2328;
-  --text-secondary: #656D76;
-  --accent: #0969DA;
-  --accent-hover: #0550AE;
-  --border: #D0D7DE;
-  --success: #1A7F37;
-  --warning: #9A6700;
-  --danger: #CF222E;
+  --text-primary: #3E2723;
+  --text-secondary: #795548;
+  --accent: #E65100;
+  --accent-hover: #EF6C00;
+  --border: #D7CCC8;
+  --success: #2E7D32;
+  --warning: #EF6C00;
+  --danger: #BF360C;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -72,20 +72,20 @@ body {
   background: var(--surface-elevated); color: var(--text-primary); transition: .15s;
 }
 .btn:hover { background: var(--surface-hover); }
-.btn-success { background: #1a5e2a; border-color: var(--success); color: #fff; }
-.light-theme .btn-success { background: #dafbe1; color: #1a5e2a; border-color: #3FB950; }
-.btn-success:hover { background: #216e34; }
-.btn-danger { background: #5c1b1b; border-color: var(--danger); color: #fff; }
-.light-theme .btn-danger { background: #ffebe9; color: #cf222e; border-color: #cf222e; }
-.btn-danger:hover { background: #752222; }
-.btn-primary { background: #0d4a8c; border-color: var(--accent); color: #fff; }
-.light-theme .btn-primary { background: #ddf4ff; color: #0969da; border-color: #58A6FF; }
-.btn-primary:hover { background: #1158a3; }
-.btn-warning { background: #5a3d00; border-color: var(--warning); color: #fff; }
-.light-theme .btn-warning { background: #fff8c5; color: #7d4e00; border-color: #D29922; }
-.btn-warning:hover { background: #6b4a00; }
-.btn-info { background: #0d4a8c; border-color: var(--accent); color: #fff; }
-.light-theme .btn-info { background: #ddf4ff; color: #0969da; border-color: #58A6FF; }
+.btn-success { background: #1b4d2e; border-color: var(--success); color: #fff; }
+.light-theme .btn-success { background: #e8f5e9; color: #1b4d2e; border-color: #27AE60; }
+.btn-success:hover { background: #236b3a; }
+.btn-danger { background: #5c1810; border-color: var(--danger); color: #fff; }
+.light-theme .btn-danger { background: #fbe9e7; color: #bf360c; border-color: #bf360c; }
+.btn-danger:hover { background: #7c2116; }
+.btn-primary { background: #8c4a0d; border-color: var(--accent); color: #fff; }
+.light-theme .btn-primary { background: #fff3e0; color: #e65100; border-color: #E67E22; }
+.btn-primary:hover { background: #a05a1a; }
+.btn-warning { background: #6b4a00; border-color: var(--warning); color: #fff; }
+.light-theme .btn-warning { background: #fff8e1; color: #7d4e00; border-color: #F39C12; }
+.btn-warning:hover { background: #7d5b00; }
+.btn-info { background: #5d4037; border-color: var(--accent); color: #fff; }
+.light-theme .btn-info { background: #efebe9; color: #5d4037; border-color: #795548; }
 .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-secondary); }
 .btn-ghost:hover { background: var(--surface-hover); color: var(--text-primary); }
 .btn-small { padding: 6px 10px; font-size: 0.78rem; }
@@ -256,6 +256,49 @@ body {
 .downloads-table .dl-fmt { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
 .downloads-table .dl-date { color: var(--text-secondary); font-size: 0.82rem; }
 
+/* Autumn leaves animation */
+.leaf {
+  position: fixed;
+  top: -10%;
+  width: 18px; height: 18px;
+  background: var(--accent);
+  opacity: 0.35;
+  border-radius: 0 80% 0 80%;
+  animation: fall linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+.leaf:nth-child(1)  { left: 5%;  animation-duration: 9s;  animation-delay: 0s;   background: #E67E22; width: 14px; height: 14px; }
+.leaf:nth-child(2)  { left: 15%; animation-duration: 11s; animation-delay: 2s;   background: #D35400; width: 22px; height: 22px; }
+.leaf:nth-child(3)  { left: 25%; animation-duration: 8s;  animation-delay: 4s;   background: #F39C12; width: 16px; height: 16px; }
+.leaf:nth-child(4)  { left: 35%; animation-duration: 10s; animation-delay: 1s;   background: #E67E22; width: 20px; height: 20px; }
+.leaf:nth-child(5)  { left: 45%; animation-duration: 12s; animation-delay: 3s;   background: #C0392B; width: 15px; height: 15px; }
+.leaf:nth-child(6)  { left: 55%; animation-duration: 9s;  animation-delay: 5s;   background: #D35400; width: 18px; height: 18px; }
+.leaf:nth-child(7)  { left: 65%; animation-duration: 11s; animation-delay: 0s;   background: #E67E22; width: 12px; height: 12px; }
+.leaf:nth-child(8)  { left: 75%; animation-duration: 10s; animation-delay: 2s;   background: #F39C12; width: 21px; height: 21px; }
+.leaf:nth-child(9)  { left: 85%; animation-duration: 8s;  animation-delay: 4s;   background: #D35400; width: 17px; height: 17px; }
+.leaf:nth-child(10) { left: 95%; animation-duration: 13s; animation-delay: 1s;   background: #E67E22; width: 19px; height: 19px; }
+@keyframes fall {
+  0%   { transform: translateY(-10vh) rotate(0deg)   translateX(0);      opacity: 0.7; }
+  25%  { transform: translateY(25vh) rotate(90deg)   translateX(25px);  }
+  50%  { transform: translateY(50vh) rotate(180deg)  translateX(-25px); }
+  75%  { transform: translateY(75vh) rotate(270deg)  translateX(25px);  }
+  100% { transform: translateY(110vh) rotate(360deg) translateX(0);      opacity: 0.1; }
+}
+
+/* Warm autumn background glow */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(230,126,34,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(243,156,18,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(192,57,43,0.04) 0%, transparent 60%);
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -264,6 +307,10 @@ body {
 </style>
 </head>
 <body>
+
+<!-- Autumn leaves -->
+<div class="leaf"></div><div class="leaf"></div><div class="leaf"></div><div class="leaf"></div><div class="leaf"></div>
+<div class="leaf"></div><div class="leaf"></div><div class="leaf"></div><div class="leaf"></div><div class="leaf"></div>
 
 <div class="app-wrapper" id="app">
   <div id="serverOverlay" style="display:none;position:fixed;inset:0;background:rgba(11,12,16,0.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">
@@ -278,8 +325,8 @@ body {
   </div>
   <header class="topbar">
     <a href="#" class="logo" onclick="return false;">
-      <span class="logo-icon">🛡️</span>
-      <span class="logo-text">PrivacyHub Web</span>
+      <span class="logo-icon">🍂</span>
+      <span class="logo-text">PrivacyHub</span>
     </a>
     <div class="topbar-actions">
       <select class="lang-select" id="langSelect" onchange="onLangChange(this.value)">
@@ -294,7 +341,7 @@ body {
       <button class="btn btn-danger" onclick="deleteCurrentRule()" data-i18n="delete">🗑️ Delete</button>
       <button class="btn btn-primary" onclick="saveCurrentRule()" data-i18n="save">💾 Save</button>
       <button class="btn btn-warning" onclick="showPreview()" data-i18n="preview">👁️ Preview</button>
-      <button class="btn" style="background:#3d1f5c;border-color:#a371f7;color:#fff;" onclick="showPublishModal()">📢 <span data-i18n="publish">Publish</span></button>
+      <button class="btn" style="background:#8c4a0d;border-color:#E67E22;color:#fff;" onclick="showPublishModal()">📢 <span data-i18n="publish">Publish</span></button>
       <button class="btn btn-info" onclick="showPublicBrowser()">🌍 <span data-i18n="browsePublic">Public</span></button>
       <button class="btn btn-info" onclick="showDownloads()" data-i18n="downloads">📥 Downloads</button>
     </div>
