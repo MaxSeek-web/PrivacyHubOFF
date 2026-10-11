@@ -313,7 +313,7 @@ body::before {
 <div class="leaf"></div><div class="leaf"></div><div class="leaf"></div><div class="leaf"></div><div class="leaf"></div>
 
 <div class="app-wrapper" id="app">
-  <div id="serverOverlay" style="display:none;position:fixed;inset:0;background:rgba(11,12,16,0.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">
+  <div id="serverOverlay" style="display:none !important;position:fixed;inset:0;background:rgba(11,12,16,0.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;">
     <div style="font-size:4rem;margin-bottom:16px;">🔧</div>
     <h1 style="font-size:1.6rem;margin-bottom:12px;color:var(--text-primary);">Технические работы</h1>
     <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(248,81,73,0.15);color:#F85149;padding:10px 18px;border-radius:8px;font-size:0.9rem;font-weight:600;margin-bottom:20px;">
@@ -1776,8 +1776,8 @@ function checkServerLoop() {
   setInterval(pingServer, 5000);
 }
 
-// Start checking after 2 seconds
-checkServerLoop();
+// Server ping disabled for public deployment
+// checkServerLoop();
 </script>
 </body>
 </html>
